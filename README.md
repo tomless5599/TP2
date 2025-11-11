@@ -14,13 +14,11 @@ les formats que vous souhaitez traiter :
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install pdfplumber pillow pytesseract pdf2image
+pip install pdfplumber pillow pytesseract
 ```
 
-> ℹ️ Pour l'OCR il est également nécessaire d'installer le moteur
-> [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) ainsi que l'outil
-> [Poppler](https://poppler.freedesktop.org/) (utilisé par `pdf2image`) sur votre
-> système.
+> ℹ️ Pour l'OCR des images il est également nécessaire d'installer le moteur
+> [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) sur votre système.
 
 ## Utilisation
 
