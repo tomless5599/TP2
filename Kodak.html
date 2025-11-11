@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur Kodak (2004) - Évaluation Charge de Travail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #e8e8e8;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #b8b8b8;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #0f1624;
+            border-radius: 10px;
+            border-left: 4px solid #4a6fa5;
+        }
+
+        .section h2 {
+            color: #7a9cc6;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d0d0d0;
+            font-weight: 500;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #2a3441;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: #1a2332;
+            color: #e8e8e8;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #5a7ba8;
+            background: #1f2a3a;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #4a6fa5;
+            color: #e8e8e8;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5a7ba8;
+        }
+
+        .btn-danger {
+            background: #8b4a5c;
+        }
+
+        .btn-danger:hover {
+            background: #9b5a6c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a2332;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #2a3441;
+            padding: 10px;
+            text-align: left;
+            color: #e8e8e8;
+            border-bottom: 2px solid #3a4f6f;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #2a3441;
+            color: #d0d0d0;
+            font-size: 0.9em;
+        }
+
+        tr:hover {
+            background: #1f2a3a;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #2a3441;
+            border-radius: 4px;
+            background: #0f1624;
+            color: #e8e8e8;
+            font-size: 0.9em;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: #5a7ba8;
+            background: #1a2332;
+        }
+
+        table select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #2a3441;
+            border-radius: 4px;
+            background: #0f1624;
+            color: #e8e8e8;
+            font-size: 0.9em;
+        }
+
+        table select:focus {
+            border-color: #5a7ba8;
+            background: #1a2332;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #2a3f5f 0%, #1a2a3f 100%);
+            color: #e8e8e8;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #3a4f6f;
+        }
+
+        .results h2 {
+            color: #d0d0d0;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #6fb3a0;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #a0a0a0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .info-box {
+            background: #2a3441;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #7a9cc6;
+            margin-bottom: 20px;
+            color: #d0d0d0;
+        }
+
+        .info-box strong {
+            color: #e8e8e8;
+        }
+
+        .delete-btn {
+            padding: 4px 10px;
+            background: #8b4a5c;
+            color: #e8e8e8;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .delete-btn:hover {
+            background: #9b5a6c;
+        }
+
+        .points-cell {
+            text-align: center;
+            font-weight: bold;
+            color: #6fb3a0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculateur Kodak (2004)</h1>
+        <p class="subtitle">Évaluation de la charge de travail physique - Classification et pointage des efforts</p>
+
+        <div class="info-box">
+            <strong>Méthode Kodak (2004):</strong> Cette méthode permet d'évaluer la charge de travail physique en classifiant les efforts selon leur degré (Léger, Modéré, Intense) et leur durée, puis de calculer la consommation d'oxygène associée.
+        </div>
+
+        <div class="section">
+            <h2>Efforts Physiques Principaux</h2>
+            <button class="btn" onclick="addMainEffort()">Ajouter un effort principal</button>
+            <button class="btn btn-danger" onclick="clearMainEfforts()" style="margin-left: 10px;">Réinitialiser</button>
+            
+            <table id="main-efforts-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">#</th>
+                        <th style="width: 150px;">Description</th>
+                        <th style="width: 200px;">Type d'effort</th>
+                        <th style="width: 100px;">Poids/Force</th>
+                        <th style="width: 100px;">Maniement</th>
+                        <th style="width: 100px;">Degré</th>
+                        <th style="width: 80px;">% Temps</th>
+                        <th style="width: 120px;">Durée</th>
+                        <th style="width: 80px;">Points</th>
+                        <th style="width: 80px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="main-efforts-body">
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 20px; color: #888;">
+                            Aucun effort principal ajouté. Cliquez sur "Ajouter un effort principal" pour commencer.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Efforts Physiques Secondaires</h2>
+            <button class="btn" onclick="addSecondaryEffort()">Ajouter un effort secondaire</button>
+            <button class="btn btn-danger" onclick="clearSecondaryEfforts()" style="margin-left: 10px;">Réinitialiser</button>
+            
+            <table id="secondary-efforts-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">#</th>
+                        <th style="width: 200px;">Type d'effort</th>
+                        <th style="width: 200px;">Description/Condition</th>
+                        <th style="width: 100px;">Degré</th>
+                        <th style="width: 80px;">Points</th>
+                        <th style="width: 80px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="secondary-efforts-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px; color: #888;">
+                            Aucun effort secondaire ajouté. Cliquez sur "Ajouter un effort secondaire" pour commencer.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Résultats</h2>
+            <div class="results" id="results">
+                <div class="result-item">
+                    <span class="result-label">Total points efforts principaux:</span>
+                    <span class="result-value" id="main-points">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Total points efforts secondaires:</span>
+                    <span class="result-value" id="secondary-points">0</span>
+                </div>
+                <div class="result-item" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid rgba(255, 255, 255, 0.3);">
+                    <span class="result-label">Total des points:</span>
+                    <span class="result-value" style="font-size: 1.8em;" id="total-points">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Consommation d'O₂ (VO₂):</span>
+                    <span class="result-value" id="vo2">0.000 l O₂/min</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Aide - Classification des Efforts (Figure 8)</h2>
+            <div style="background: #1a2332; padding: 15px; border-radius: 8px; color: #d0d0d0; font-size: 0.9em;">
+                <h3 style="color: #7a9cc6; margin-bottom: 10px;">Lever/transporter (poids)</h3>
+                <ul style="margin-left: 20px; margin-bottom: 15px;">
+                    <li><strong>Léger:</strong> 1.8 - 4.5 kg (Maniement: Facile/difficile)</li>
+                    <li><strong>Modéré:</strong> 5 - 34 kg (Maniement: Facile) ou 5 - 18 kg (Maniement: Difficile)</li>
+                    <li><strong>Intense:</strong> > 34 kg (Maniement: Facile) ou > 18 kg (Maniement: Difficile)</li>
+                </ul>
+                
+                <h3 style="color: #7a9cc6; margin-bottom: 10px;">Application de forces</h3>
+                <ul style="margin-left: 20px; margin-bottom: 15px;">
+                    <li><strong>Léger:</strong> 18 - 180 N (Maniement: Facile)</li>
+                    <li><strong>Modéré:</strong> 181 - 335 N (Maniement: Facile) ou 111 - 180 N (Maniement: Difficile)</li>
+                    <li><strong>Intense:</strong> > 335 N (Maniement: Facile) ou > 180 N (Maniement: Difficile)</li>
+                </ul>
+                
+                <h3 style="color: #7a9cc6; margin-bottom: 10px;">Monter/grimper (poids)</h3>
+                <ul style="margin-left: 20px;">
+                    <li><strong>Léger:</strong> 0 - 4.5 kg (Maniement: Facile/difficile)</li>
+                    <li><strong>Modéré:</strong> 5 - 18 kg (Maniement: Facile) ou 5 - 11 kg (Maniement: Difficile)</li>
+                    <li><strong>Intense:</strong> > 18 kg (Maniement: Facile) ou > 11 kg (Maniement: Difficile)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mainEfforts = [];
+        let secondaryEfforts = [];
+        let effortCounter = 1;
+
+        // Pointage selon Figure 9 (efforts principaux)
+        const mainEffortScoring = {
+            'leger': {
+                'occasionnel': 10,    // 5-25%
+                'frequent': 19,       // 26-50%
+                'constant': 38        // >50%
+            },
+            'modere': {
+                'occasionnel': 16,
+                'frequent': 38,       // avec *
+                'constant': 76        // avec *
+            },
+            'intense': {
+                'occasionnel': 26,
+                'frequent': 57,       // avec *
+                'constant': 115       // avec *, max 115
+            }
+        };
+
+        // Pointage selon Figure 10 (efforts secondaires)
+        const secondaryEffortTypes = [
+            { value: 'debout', label: 'Debout / marcher', options: [
+                { degree: 'modere', condition: '25-50% du temps', points: 13 },
+                { degree: 'intense', condition: '> 50% du temps', points: 22 }
+            ]},
+            { value: 'posture', label: 'Posture restreinte (sauf cou et tête)', options: [
+                { degree: 'leger', condition: 'Assis > 75% du temps', points: 6 },
+                { degree: 'modere', condition: 'Mauvaise posture (> 5% du temps)', points: 13 }
+            ]},
+            { value: 'visuel', label: 'Information visuelle ou auditive (> 50% du temps)', options: [
+                { degree: 'leger', condition: 'Facilement détectable, sans PRTCs', points: 6 },
+                { degree: 'modere', condition: 'Facilement détectable, avec PRTC ou Difficilement détectable, sans PRTC', points: 13 },
+                { degree: 'intense', condition: 'Difficilement détectable, avec PRTC', points: 22 }
+            ]},
+            { value: 'cadence', label: 'Cadence fixe imposée', options: [
+                { degree: 'modere', condition: '> 50% du temps', points: 13 }
+            ]},
+            { value: 'petits_muscles', label: 'Utilisation de petits groupes musculaires (doigts, mains, pieds) jusqu\'à 1.8 Kg', options: [
+                { degree: 'modere', condition: '25-50% du temps', points: 13 },
+                { degree: 'intense', condition: '> 50% du temps', points: 22 }
+            ]},
+            { value: 'intense_courte', label: 'Effort intense de courte durée (< 5% du temps)', options: [
+                { degree: 'modere', condition: 'Jusqu\'à 23 Kg', points: 13 },
+                { degree: 'intense', condition: '> 23 Kg', points: 22 }
+            ]}
+        ];
+
+        // Classification des efforts principaux selon Figure 8
+        function classifyMainEffort(type, weightOrForce, handling) {
+            weightOrForce = parseFloat(weightOrForce) || 0;
+            
+            if (type === 'lever') {
+                if (handling === 'facile') {
+                    if (weightOrForce >= 1.8 && weightOrForce <= 4.5) return 'leger';
+                    if (weightOrForce >= 5 && weightOrForce <= 34) return 'modere';
+                    if (weightOrForce > 34) return 'intense';
+                } else if (handling === 'difficile') {
+                    if (weightOrForce >= 5 && weightOrForce <= 18) return 'modere';
+                    if (weightOrForce > 18) return 'intense';
+                }
+            } else if (type === 'force') {
+                // Conversion: 1 kg ≈ 9.81 N, mais on utilise directement les valeurs en N
+                if (handling === 'facile') {
+                    if (weightOrForce >= 18 && weightOrForce <= 180) return 'leger';
+                    if (weightOrForce >= 181 && weightOrForce <= 335) return 'modere';
+                    if (weightOrForce > 335) return 'intense';
+                } else if (handling === 'difficile') {
+                    if (weightOrForce >= 111 && weightOrForce <= 180) return 'modere';
+                    if (weightOrForce > 180) return 'intense';
+                }
+            } else if (type === 'monter') {
+                if (handling === 'facile') {
+                    if (weightOrForce >= 0 && weightOrForce <= 4.5) return 'leger';
+                    if (weightOrForce >= 5 && weightOrForce <= 18) return 'modere';
+                    if (weightOrForce > 18) return 'intense';
+                } else if (handling === 'difficile') {
+                    if (weightOrForce >= 5 && weightOrForce <= 11) return 'modere';
+                    if (weightOrForce > 11) return 'intense';
+                }
+            }
+            return null;
+        }
+
+        function getMainEffortPoints(degree, duration) {
+            if (!mainEffortScoring[degree] || !mainEffortScoring[degree][duration]) {
+                return 0;
+            }
+            return mainEffortScoring[degree][duration];
+        }
+
+        function addMainEffort() {
+            const effort = {
+                id: effortCounter++,
+                description: '',
+                type: 'lever',
+                weightOrForce: 0,
+                handling: 'facile',
+                degree: 'leger',
+                percentTime: 10,
+                duration: 'occasionnel',
+                points: 0
+            };
+            mainEfforts.push(effort);
+            updateMainEffortsTable();
+        }
+
+        function deleteMainEffort(id) {
+            mainEfforts = mainEfforts.filter(e => e.id !== id);
+            updateMainEffortsTable();
+        }
+
+        function clearMainEfforts() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer tous les efforts principaux?')) {
+                mainEfforts = [];
+                updateMainEffortsTable();
+            }
+        }
+
+        function updateMainEffort(id, field, value) {
+            const effort = mainEfforts.find(e => e.id === id);
+            if (effort) {
+                effort[field] = value;
+                
+                // Recalculer le degré si nécessaire
+                if (field === 'type' || field === 'weightOrForce' || field === 'handling') {
+                    const newDegree = classifyMainEffort(effort.type, effort.weightOrForce, effort.handling);
+                    if (newDegree) {
+                        effort.degree = newDegree;
+                    }
+                }
+                
+                // Mettre à jour la durée selon le pourcentage de temps
+                if (field === 'percentTime') {
+                    const percent = parseFloat(value) || 0;
+                    if (percent >= 5 && percent <= 25) {
+                        effort.duration = 'occasionnel';
+                    } else if (percent >= 26 && percent <= 50) {
+                        effort.duration = 'frequent';
+                    } else if (percent > 50) {
+                        effort.duration = 'constant';
+                    }
+                }
+                
+                // Recalculer les points
+                effort.points = getMainEffortPoints(effort.degree, effort.duration);
+                
+                updateMainEffortsTable();
+            }
+        }
+
+        function updateMainEffortsTable() {
+            const tbody = document.getElementById('main-efforts-body');
+            
+            if (mainEfforts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #888;">Aucun effort principal ajouté. Cliquez sur "Ajouter un effort principal" pour commencer.</td></tr>';
+                calculateResults();
+                return;
+            }
+
+            tbody.innerHTML = mainEfforts.map(effort => {
+                // Déterminer automatiquement la durée selon le pourcentage
+                let autoDuration = effort.duration;
+                if (effort.percentTime >= 5 && effort.percentTime <= 25) {
+                    autoDuration = 'occasionnel';
+                } else if (effort.percentTime >= 26 && effort.percentTime <= 50) {
+                    autoDuration = 'frequent';
+                } else if (effort.percentTime > 50) {
+                    autoDuration = 'constant';
+                }
+                
+                return `
+                    <tr>
+                        <td style="text-align: center;">${effort.id}</td>
+                        <td><input type="text" value="${effort.description}" onchange="updateMainEffort(${effort.id}, 'description', this.value)" placeholder="Description"></td>
+                        <td>
+                            <select onchange="updateMainEffort(${effort.id}, 'type', this.value)">
+                                <option value="lever" ${effort.type === 'lever' ? 'selected' : ''}>Lever/transporter (poids)</option>
+                                <option value="force" ${effort.type === 'force' ? 'selected' : ''}>Application de forces</option>
+                                <option value="monter" ${effort.type === 'monter' ? 'selected' : ''}>Monter/grimper (poids)</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" value="${effort.weightOrForce}" step="0.1" onchange="updateMainEffort(${effort.id}, 'weightOrForce', parseFloat(this.value) || 0)" placeholder="${effort.type === 'force' ? 'N' : 'kg'}">
+                        </td>
+                        <td>
+                            <select onchange="updateMainEffort(${effort.id}, 'handling', this.value)">
+                                <option value="facile" ${effort.handling === 'facile' ? 'selected' : ''}>Facile</option>
+                                <option value="difficile" ${effort.handling === 'difficile' ? 'selected' : ''}>Difficile</option>
+                            </select>
+                        </td>
+                        <td style="text-align: center; color: #7a9cc6; font-weight: bold;">${effort.degree.charAt(0).toUpperCase() + effort.degree.slice(1)}</td>
+                        <td>
+                            <input type="number" value="${effort.percentTime}" min="0" max="100" step="0.1" onchange="updateMainEffort(${effort.id}, 'percentTime', parseFloat(this.value) || 0)" placeholder="%">
+                        </td>
+                        <td style="text-align: center; color: #b8b8b8; font-size: 0.85em;">${autoDuration.charAt(0).toUpperCase() + autoDuration.slice(1)}</td>
+                        <td class="points-cell">${effort.points}</td>
+                        <td><button class="delete-btn" onclick="deleteMainEffort(${effort.id})">Suppr.</button></td>
+                    </tr>
+                `;
+            }).join('');
+            
+            calculateResults();
+        }
+
+        function addSecondaryEffort() {
+            const effortType = secondaryEffortTypes.find(t => t.value === 'debout');
+            const firstOption = effortType ? effortType.options[0] : null;
+            const effort = {
+                id: effortCounter++,
+                type: 'debout',
+                condition: firstOption ? firstOption.condition : '',
+                degree: firstOption ? firstOption.degree : 'modere',
+                points: firstOption ? firstOption.points : 13
+            };
+            secondaryEfforts.push(effort);
+            updateSecondaryEffortsTable();
+        }
+
+        function deleteSecondaryEffort(id) {
+            secondaryEfforts = secondaryEfforts.filter(e => e.id !== id);
+            updateSecondaryEffortsTable();
+        }
+
+        function clearSecondaryEfforts() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer tous les efforts secondaires?')) {
+                secondaryEfforts = [];
+                updateSecondaryEffortsTable();
+            }
+        }
+
+        function updateSecondaryEffort(id, field, value) {
+            const effort = secondaryEfforts.find(e => e.id === id);
+            if (effort) {
+                effort[field] = value;
+                
+                // Recalculer les points si le type ou le degré change
+                if (field === 'type' || field === 'degree') {
+                    const effortType = secondaryEffortTypes.find(t => t.value === effort.type);
+                    if (effortType) {
+                        const option = effortType.options.find(o => o.degree === effort.degree);
+                        if (option) {
+                            effort.points = option.points;
+                            effort.condition = option.condition;
+                        }
+                    }
+                }
+                
+                updateSecondaryEffortsTable();
+            }
+        }
+
+        function updateSecondaryEffortsTable() {
+            const tbody = document.getElementById('secondary-efforts-body');
+            
+            if (secondaryEfforts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #888;">Aucun effort secondaire ajouté. Cliquez sur "Ajouter un effort secondaire" pour commencer.</td></tr>';
+                calculateResults();
+                return;
+            }
+
+            tbody.innerHTML = secondaryEfforts.map(effort => {
+                const effortType = secondaryEffortTypes.find(t => t.value === effort.type);
+                const availableOptions = effortType ? effortType.options : [];
+                
+                return `
+                    <tr>
+                        <td style="text-align: center;">${effort.id}</td>
+                        <td>
+                            <select onchange="updateSecondaryEffort(${effort.id}, 'type', this.value)">
+                                ${secondaryEffortTypes.map(t => 
+                                    `<option value="${t.value}" ${effort.type === t.value ? 'selected' : ''}>${t.label}</option>`
+                                ).join('')}
+                            </select>
+                        </td>
+                        <td>
+                            <select onchange="updateSecondaryEffort(${effort.id}, 'degree', this.value)">
+                                ${availableOptions.map(opt => 
+                                    `<option value="${opt.degree}" ${effort.degree === opt.degree ? 'selected' : ''}>${opt.condition}</option>`
+                                ).join('')}
+                            </select>
+                        </td>
+                        <td style="text-align: center; color: #7a9cc6; font-weight: bold;">${effort.degree.charAt(0).toUpperCase() + effort.degree.slice(1)}</td>
+                        <td class="points-cell">${effort.points}</td>
+                        <td><button class="delete-btn" onclick="deleteSecondaryEffort(${effort.id})">Suppr.</button></td>
+                    </tr>
+                `;
+            }).join('');
+            
+            calculateResults();
+        }
+
+        function calculateResults() {
+            // Calculer le total des points des efforts principaux
+            let mainPoints = 0;
+            let hasConstantIntense = false;
+            let hasConstantModere = false;
+            
+            // Vérifier s'il y a un effort intense constant
+            mainEfforts.forEach(effort => {
+                if (effort.degree === 'intense' && effort.duration === 'constant') {
+                    hasConstantIntense = true;
+                }
+                if (effort.degree === 'modere' && effort.duration === 'constant') {
+                    hasConstantModere = true;
+                }
+            });
+            
+            // Si effort intense constant, max 115 points et ne pas compter les autres efforts
+            if (hasConstantIntense) {
+                mainPoints = 115;
+            } else {
+                // Regrouper les efforts par degré et additionner les pourcentages de temps
+                const legerEfforts = mainEfforts.filter(e => e.degree === 'leger');
+                const modereEfforts = mainEfforts.filter(e => e.degree === 'modere');
+                const intenseEfforts = mainEfforts.filter(e => e.degree === 'intense');
+                
+                // Calculer le pourcentage total pour chaque degré
+                const legerPercent = legerEfforts.reduce((sum, e) => sum + (parseFloat(e.percentTime) || 0), 0);
+                const moderePercent = modereEfforts.reduce((sum, e) => sum + (parseFloat(e.percentTime) || 0), 0);
+                const intensePercent = intenseEfforts.reduce((sum, e) => sum + (parseFloat(e.percentTime) || 0), 0);
+                
+                // Déterminer la durée pour chaque degré selon le pourcentage total
+                let legerDuration = 'occasionnel';
+                if (legerPercent >= 5 && legerPercent <= 25) legerDuration = 'occasionnel';
+                else if (legerPercent >= 26 && legerPercent <= 50) legerDuration = 'frequent';
+                else if (legerPercent > 50) legerDuration = 'constant';
+                
+                let modereDuration = 'occasionnel';
+                if (moderePercent >= 5 && moderePercent <= 25) modereDuration = 'occasionnel';
+                else if (moderePercent >= 26 && moderePercent <= 50) modereDuration = 'frequent';
+                else if (moderePercent > 50) modereDuration = 'constant';
+                
+                let intenseDuration = 'occasionnel';
+                if (intensePercent >= 5 && intensePercent <= 25) intenseDuration = 'occasionnel';
+                else if (intensePercent >= 26 && intensePercent <= 50) intenseDuration = 'frequent';
+                else if (intensePercent > 50) intenseDuration = 'constant';
+                
+                // Calculer les points pour chaque degré (seulement si >= 5%)
+                let legerPoints = 0;
+                if (legerEfforts.length > 0 && legerPercent >= 5 && !hasConstantModere) {
+                    legerPoints = getMainEffortPoints('leger', legerDuration);
+                }
+                
+                let moderePoints = 0;
+                if (modereEfforts.length > 0 && moderePercent >= 5) {
+                    moderePoints = getMainEffortPoints('modere', modereDuration);
+                }
+                
+                let intensePoints = 0;
+                if (intenseEfforts.length > 0 && intensePercent >= 5) {
+                    intensePoints = getMainEffortPoints('intense', intenseDuration);
+                }
+                
+                mainPoints = legerPoints + moderePoints + intensePoints;
+                
+                // Limite max 115 pour les efforts principaux
+                if (mainPoints > 115) {
+                    mainPoints = 115;
+                }
+            }
+            
+            // Calculer le total des points des efforts secondaires
+            const secondaryPoints = secondaryEfforts.reduce((sum, effort) => sum + effort.points, 0);
+            
+            // Total des points
+            const totalPoints = mainPoints + secondaryPoints;
+            
+            // Calcul de la consommation d'O₂ selon la formule: VO2 = 0.012 * (total des points – 9)
+            const vo2 = 0.012 * (totalPoints - 9);
+            
+            // Affichage
+            document.getElementById('main-points').textContent = mainPoints;
+            document.getElementById('secondary-points').textContent = secondaryPoints;
+            document.getElementById('total-points').textContent = totalPoints;
+            document.getElementById('vo2').textContent = vo2.toFixed(3) + ' l O₂/min';
+        }
+
+        // Initialiser
+        addMainEffort();
+    </script>
+</body>
+</html>
+
