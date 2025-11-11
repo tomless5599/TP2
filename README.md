@@ -45,6 +45,10 @@ python -m ergodata.extractor page1.png page2.png --merge --format json --output 
 Le fichier de sortie contient les valeurs retrouvées ainsi que les extraits de
 texte correspondants lorsqu'on utilise le format JSON.
 
+L'extracteur applique d'abord des expressions régulières précises puis, en cas
+d'échec, une recherche heuristique par mots-clés afin de récupérer les valeurs
+les plus plausibles même lorsque la mise en page du document varie.
+
 ## Limitations
 
 - Les expressions régulières sont basées sur la terminologie française utilisée
