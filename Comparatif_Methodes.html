@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparatif des méthodes Garg, Kodak et RSST</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5f5;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --accent: #0f172a;
+            --accent-soft: #e0f2fe;
+            --accent-strong: #0284c7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            background: linear-gradient(180deg, var(--slate-50) 0%, var(--slate-100) 65%, #ffffff 100%);
+            color: var(--slate-700);
+        }
+
+        header {
+            text-align: center;
+            padding: 56px 16px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            color: var(--accent);
+        }
+
+        header p {
+            max-width: 740px;
+            margin: 18px auto 0;
+            line-height: 1.6;
+            color: var(--slate-600);
+        }
+
+        main {
+            max-width: 1120px;
+            margin: 0 auto 80px;
+            padding: 0 24px 24px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-soft);
+            color: var(--accent-strong);
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            margin-bottom: 16px;
+        }
+
+        section {
+            background: white;
+            border: 1px solid var(--slate-200);
+            border-radius: 16px;
+            padding: 32px clamp(20px, 4vw, 36px);
+            box-shadow: 0 18px 30px rgba(15, 23, 42, 0.07);
+        }
+
+        section + section {
+            margin-top: 32px;
+        }
+
+        h2.section-title {
+            margin-top: 0;
+            font-size: clamp(1.6rem, 3vw, 2rem);
+            color: var(--accent);
+        }
+
+        .grid {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .card {
+            border: 1px solid var(--slate-200);
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, var(--slate-50) 100%);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-strong);
+            transform: translateY(-4px);
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 1.35rem;
+            color: var(--accent);
+        }
+
+        .card p {
+            margin: 0;
+            line-height: 1.55;
+            color: var(--slate-600);
+        }
+
+        .key-points {
+            padding-left: 18px;
+            margin: 0;
+            color: var(--slate-600);
+        }
+
+        .key-points li {
+            margin-bottom: 10px;
+        }
+
+        .key-points li:last-child {
+            margin-bottom: 0;
+        }
+
+        .accent-box {
+            background: var(--accent-soft);
+            border-radius: 12px;
+            padding: 18px 20px;
+            color: var(--accent-strong);
+            font-weight: 600;
+            line-height: 1.55;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+            border: 1px solid var(--slate-200);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+
+        thead {
+            background: var(--slate-200);
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid var(--slate-200);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        th {
+            font-size: 0.95rem;
+            color: var(--accent);
+        }
+
+        td {
+            color: var(--slate-600);
+            line-height: 1.55;
+        }
+
+        a {
+            color: var(--accent-strong);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .calc-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--accent-strong);
+            background: white;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .calc-link::after {
+            content: "↗";
+            font-size: 0.85em;
+        }
+
+        .calc-link:hover {
+            background: var(--accent-strong);
+            color: white;
+            text-decoration: none;
+        }
+
+        .guidance {
+            display: grid;
+            gap: 16px;
+        }
+
+        @media (max-width: 720px) {
+            main {
+                padding: 0 16px 24px;
+            }
+
+            section {
+                padding: 28px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="badge">Ergonomie et physiologie du travail</span>
+        <h1>Comparatif des méthodes Garg, Kodak et RSST</h1>
+        <p>
+            Trois méthodes de référence permettent d'estimer la dépense énergétique d'un poste. Ce dossier présente leurs
+            principales caractéristiques, les données d'entrée et les résultats fournis afin de faciliter le choix de
+            l'outil le plus approprié à votre contexte.
+        </p>
+    </header>
+
+    <main>
+        <section aria-labelledby="overview-title">
+            <h2 class="section-title" id="overview-title">Vue d'ensemble rapide</h2>
+            <div class="grid">
+                <article class="card">
+                    <h3>Méthode Garg, Chaffin &amp; Herrin (1978)</h3>
+                    <p class="accent-box">
+                        Outil détaillé composé de 31 équations pour quantifier l'énergie dépensée lors de mouvements ou de
+                        postures spécifiques.
+                    </p>
+                    <ul class="key-points">
+                        <li>Prend en compte les paramètres individuels (poids, sexe, VO<sub>2</sub>max) et la durée de la tâche.</li>
+                        <li>Décrit finement les positions assis, debout ou penché ainsi que des mouvements ciblés.</li>
+                        <li>Résultats disponibles en kcal/min, L&nbsp;O<sub>2</sub>/min et % du VO<sub>2</sub>max.</li>
+                        <li>Calculatrice en ligne : <a class="calc-link" href="./Garg.html" target="_blank" rel="noopener">Ouvrir la calculatrice Garg</a></li>
+                    </ul>
+                </article>
+
+                <article class="card">
+                    <h3>Méthode Kodak (2004)</h3>
+                    <p class="accent-box">
+                        Système de points qui classe les efforts principaux et secondaires selon leur intensité, leur durée
+                        et le type d'activité réalisée.
+                    </p>
+                    <ul class="key-points">
+                        <li>Basée sur les figures 8 à 10 du manuel Kodak pour sélectionner les coefficients.</li>
+                        <li>Attribue des points selon la durée d'exposition, la charge manipulée et les efforts secondaires.</li>
+                        <li>Convertit les points en VO<sub>2</sub> estimé via la relation 0,012 × (points − 9).</li>
+                        <li>Calculatrice en ligne : <a class="calc-link" href="./Kodak.html" target="_blank" rel="noopener">Ouvrir la calculatrice Kodak</a></li>
+                    </ul>
+                </article>
+
+                <article class="card">
+                    <h3>Méthode RSST</h3>
+                    <p class="accent-box">
+                        Évalue le métabolisme horaire des activités d'un poste puis classe la charge de travail selon les
+                        barèmes RSST et AIHA.
+                    </p>
+                    <ul class="key-points">
+                        <li>Décrit chaque activité par la posture, le type de travail (léger à très lourd) et sa durée.</li>
+                        <li>Somme les contributions pour obtenir le métabolisme moyen et la durée totale.</li>
+                        <li>Indique directement les classes RSST et AIHA de lourdeur du travail.</li>
+                        <li>Calculatrice en ligne : <a class="calc-link" href="./RSSTcalculator.html" target="_blank" rel="noopener">Ouvrir la calculatrice RSST</a></li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section aria-labelledby="comparison-title">
+            <h2 class="section-title" id="comparison-title">Tableau comparatif détaillé</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Critère</th>
+                        <th scope="col">Garg</th>
+                        <th scope="col">Kodak</th>
+                        <th scope="col">RSST</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Objectif principal</td>
+                        <td>Quantifier la dépense énergétique instantanée de mouvements ou postures spécifiques.</td>
+                        <td>Évaluer la charge globale d'un poste via un score de points lié à l'intensité et à la durée.</td>
+                        <td>Calculer le métabolisme moyen d'une tâche et le comparer aux seuils RSST/AIHA.</td>
+                    </tr>
+                    <tr>
+                        <td>Données nécessaires</td>
+                        <td>Paramètres individuels, répartition des postures, variables propres à chaque mouvement.</td>
+                        <td>Type d'effort, charge ou force appliquée, durée d'exposition et efforts secondaires.</td>
+                        <td>Posture, type de travail, charge ou distance spécifique et durée par activité.</td>
+                    </tr>
+                    <tr>
+                        <td>Sorties principales</td>
+                        <td>Kcal/min, L&nbsp;O<sub>2</sub>/min, % VO<sub>2</sub>max pour chaque mouvement étudié.</td>
+                        <td>Total de points, VO<sub>2</sub> estimé et classification de l'effort (léger à intense).</td>
+                        <td>Travail moyen, durée totale et classes RSST/AIHA.</td>
+                    </tr>
+                    <tr>
+                        <td>Niveau de détail</td>
+                        <td>Très fin : chaque mouvement possède sa propre équation empirique.</td>
+                        <td>Moyen : regroupe les efforts par familles avec des barèmes normalisés.</td>
+                        <td>Moyen à global : insiste sur la dépense totale et le respect réglementaire.</td>
+                    </tr>
+                    <tr>
+                        <td>Utilisation recommandée</td>
+                        <td>Analyse approfondie de tâches manuelles précises ou conception ergonomique.</td>
+                        <td>Comparaison de postes industriels et planification de prévention.</td>
+                        <td>Suivi réglementaire, hygiène du travail ou surveillance de la fatigue.</td>
+                    </tr>
+                    <tr>
+                        <td>Points forts</td>
+                        <td>Sorties très détaillées, intégration du VO<sub>2</sub> et couverture de nombreuses postures.</td>
+                        <td>Lecture rapide, système de points simple à communiquer, conversion VO<sub>2</sub> directe.</td>
+                        <td>Classement réglementaire immédiat et prise en compte du métabolisme basal.</td>
+                    </tr>
+                    <tr>
+                        <td>À surveiller</td>
+                        <td>Nombre élevé de paramètres d'entrée et nécessité de décrire précisément chaque mouvement.</td>
+                        <td>Dépendance aux barèmes Kodak pour choisir les coefficients corrects.</td>
+                        <td>Exige une estimation fiable des durées et intensités de chaque activité.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section aria-labelledby="guidance-title">
+            <h2 class="section-title" id="guidance-title">Orienter votre choix</h2>
+            <div class="guidance">
+                <div class="accent-box">
+                    <strong>Analyse détaillée d'une opération :</strong> la méthode Garg est la plus adaptée pour décortiquer
+                    un geste spécifique grâce à ses équations dédiées.
+                </div>
+                <div class="accent-box">
+                    <strong>Comparaison de plusieurs postes :</strong> la méthode Kodak synthétise rapidement les efforts en un
+                    score unique et facilite la hiérarchisation des priorités.
+                </div>
+                <div class="accent-box">
+                    <strong>Suivi réglementaire ou hygiène :</strong> la méthode RSST fournit directement la classe officielle
+                    de lourdeur du travail et permet d'évaluer la conformité.
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
