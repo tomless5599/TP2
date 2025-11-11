@@ -224,6 +224,11 @@
         <div class="section">
             <h2>Ajouter une Activité</h2>
             <div class="form-group">
+                <label for="weight">Poids de l'individu (kg)</label>
+                <input type="number" id="weight" min="1" step="0.1" value="70" placeholder="Ex: 68">
+                <p class="help-text">Le travail moyen sera ajusté selon le ratio (poids / 70 kg) avant la classification.</p>
+            </div>
+            <div class="form-group">
                 <label for="activityTitle">Titre de l'activité (optionnel)</label>
                 <input type="text" id="activityTitle" placeholder="Ex: Assemblage pièces">
             </div>
@@ -297,9 +302,17 @@
                 <span class="result-label">Durée totale de la tâche:</span>
                 <span class="result-value" id="total-duration">0 min</span>
             </div>
+            <div class="result-item">
+                <span class="result-label">Travail moyen (non ajusté):</span>
+                <span class="result-value" id="average-work" style="font-size: 1.4em;">0 kcal/min</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Poids pris en compte:</span>
+                <span class="result-value" id="weight-display">70 kg</span>
+            </div>
             <div class="result-item" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid rgba(255, 255, 255, 0.3);">
-                <span class="result-label">Travail moyen de la tâche:</span>
-                <span class="result-value" id="average-work" style="font-size: 1.8em;">0 kcal/min</span>
+                <span class="result-label">Travail moyen ajusté (utilisé pour la classification):</span>
+                <span class="result-value" id="average-work-adjusted" style="font-size: 1.8em;">0 kcal/min</span>
             </div>
         </div>
 
@@ -408,6 +421,11 @@
 
     <script>
         let activities = [];
+        const weightInput = document.getElementById('weight');
+
+        weightInput.addEventListener('input', () => {
+            calculateResults();
+        });
 
         // Gérer l'affichage du champ de montée
         document.getElementById('position').addEventListener('change', function() {
@@ -600,6 +618,12 @@
             // Travail moyen = Sommation pondérée / Durée totale (identique à weightedAverage)
             const averageWork = totalDuration > 0 ? totalWeighted / totalDuration : 0;
 
+            // Ajustement selon le poids de l'individu
+            const weight = parseFloat(weightInput.value);
+            const weightIsValid = !isNaN(weight) && weight > 0;
+            const weightFactor = weightIsValid ? weight / 70 : 1;
+            const adjustedAverageWork = averageWork * weightFactor;
+
             // Formater la durée totale avec plus de précision
             let durationDisplay = '';
             if (totalDuration >= 60) {
@@ -619,15 +643,17 @@
             document.getElementById('total-weighted').textContent = weightedAverage.toFixed(2) + ' kcal/min';
             document.getElementById('total-duration').textContent = durationDisplay;
             document.getElementById('average-work').textContent = averageWork.toFixed(2) + ' kcal/min';
+            document.getElementById('weight-display').textContent = weightIsValid ? weight.toFixed(1) + ' kg' : '70 kg (par défaut)';
+            document.getElementById('average-work-adjusted').textContent = adjustedAverageWork.toFixed(2) + ' kcal/min';
 
             // Classification et comparaison
-            updateClassification(averageWork);
+            updateClassification(adjustedAverageWork, weightIsValid ? weight : 70);
         }
 
-        function updateClassification(averageWork) {
+        function updateClassification(averageWork, weight) {
             const classificationSection = document.getElementById('classification-section');
             const classificationText = document.getElementById('classification-text');
-            
+
             if (averageWork <= 0) {
                 classificationSection.style.display = 'none';
                 return;
@@ -681,8 +707,8 @@
             // Afficher la classification
             classificationText.innerHTML = `
                 <div style="margin-bottom: 10px;">
-                    <span style="color: ${rsstColor};">● RSST: ${rsstClassification}</span> 
-                    <span style="color: #888; font-size: 0.9em;">(${averageWork.toFixed(2)} kcal/min)</span>
+                    <span style="color: ${rsstColor};">● RSST: ${rsstClassification}</span>
+                    <span style="color: #888; font-size: 0.9em;">(${averageWork.toFixed(2)} kcal/min, poids ${weight.toFixed(1)} kg)</span>
                 </div>
                 <div>
                     <span style="color: ${aihaColor};">● AIHA: ${aihaClassification}</span>
