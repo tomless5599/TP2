@@ -186,6 +186,28 @@
             text-decoration: underline;
         }
 
+        .calc-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--accent-strong);
+            background: white;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .calc-link::after {
+            content: "↗";
+            font-size: 0.85em;
+        }
+
+        .calc-link:hover {
+            background: var(--accent-strong);
+            color: white;
+            text-decoration: none;
+        }
+
         .guidance {
             display: grid;
             gap: 16px;
@@ -227,7 +249,7 @@
                         <li>Prend en compte les paramètres individuels (poids, sexe, VO<sub>2</sub>max) et la durée de la tâche.</li>
                         <li>Décrit finement les positions assis, debout ou penché ainsi que des mouvements ciblés.</li>
                         <li>Résultats disponibles en kcal/min, L&nbsp;O<sub>2</sub>/min et % du VO<sub>2</sub>max.</li>
-                        <li>Calculatrice en ligne : <a href="Garg.html">Garg.html</a></li>
+                        <li>Calculatrice en ligne : <a class="calc-link" href="./Garg.html" target="_blank" rel="noopener">Ouvrir la calculatrice Garg</a></li>
                     </ul>
                 </article>
 
@@ -241,7 +263,7 @@
                         <li>Basée sur les figures 8 à 10 du manuel Kodak pour sélectionner les coefficients.</li>
                         <li>Attribue des points selon la durée d'exposition, la charge manipulée et les efforts secondaires.</li>
                         <li>Convertit les points en VO<sub>2</sub> estimé via la relation 0,012 × (points − 9).</li>
-                        <li>Calculatrice en ligne : <a href="Kodak.html">Kodak.html</a></li>
+                        <li>Calculatrice en ligne : <a class="calc-link" href="./Kodak.html" target="_blank" rel="noopener">Ouvrir la calculatrice Kodak</a></li>
                     </ul>
                 </article>
 
@@ -255,7 +277,7 @@
                         <li>Décrit chaque activité par la posture, le type de travail (léger à très lourd) et sa durée.</li>
                         <li>Somme les contributions pour obtenir le métabolisme moyen et la durée totale.</li>
                         <li>Indique directement les classes RSST et AIHA de lourdeur du travail.</li>
-                        <li>Calculatrice en ligne : <a href="RSSTcalculator.html">RSSTcalculator.html</a></li>
+                        <li>Calculatrice en ligne : <a class="calc-link" href="./RSSTcalculator.html" target="_blank" rel="noopener">Ouvrir la calculatrice RSST</a></li>
                     </ul>
                 </article>
             </div>
