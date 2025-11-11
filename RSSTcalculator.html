@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluation Charge de Travail - Table RSST</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #e8e8e8;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #b8b8b8;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #0f1624;
+            border-radius: 10px;
+            border-left: 4px solid #4a6fa5;
+        }
+
+        .section h2 {
+            color: #7a9cc6;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d0d0d0;
+            font-weight: 500;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #2a3441;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: #1a2332;
+            color: #e8e8e8;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #5a7ba8;
+            background: #1f2a3a;
+        }
+
+        input::placeholder {
+            color: #888;
+        }
+
+        select option {
+            background: #1a2332;
+            color: #e8e8e8;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #4a6fa5;
+            color: #e8e8e8;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5a7ba8;
+        }
+
+        .btn-danger {
+            background: #8b4a5c;
+        }
+
+        .btn-danger:hover {
+            background: #9b5a6c;
+        }
+
+        .activities-list {
+            margin-top: 20px;
+        }
+
+        .activity-item {
+            background: #1a2332;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid #2a3441;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-info strong {
+            color: #7a9cc6;
+        }
+
+        .activity-details {
+            color: #b8b8b8;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .activity-kcal {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #6fb3a0;
+            margin: 0 20px;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #2a3f5f 0%, #1a2a3f 100%);
+            color: #e8e8e8;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #3a4f6f;
+        }
+
+        .results h2 {
+            color: #d0d0d0;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .basal-info {
+            background: #2a3441;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #7a9cc6;
+            margin-bottom: 20px;
+            color: #d0d0d0;
+        }
+
+        .basal-info strong {
+            color: #e8e8e8;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #a0a0a0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Évaluation de la Charge de Travail</h1>
+        <p class="subtitle">Table RSST - Calcul du Métabolisme et Travail Moyen</p>
+
+        <div class="basal-info">
+            <strong>Métabolisme basal:</strong> 60 kcal/h (quantité minimale d'énergie calorique dépensée lorsque le corps humain est au repos complet)
+        </div>
+
+        <div class="section">
+            <h2>Ajouter une Activité</h2>
+            <div class="form-group">
+                <label for="activityTitle">Titre de l'activité (optionnel)</label>
+                <input type="text" id="activityTitle" placeholder="Ex: Assemblage pièces">
+            </div>
+            <div class="form-group">
+                <label for="position">A. Position et mouvement du corps</label>
+                <select id="position">
+                    <option value="18">Assis (18 kcal/h)</option>
+                    <option value="36">Debout (36 kcal/h)</option>
+                    <option value="120">Marche - Lente (120 kcal/h)</option>
+                    <option value="150">Marche - Normale (150 kcal/h)</option>
+                    <option value="180">Marche - Rapide (180 kcal/h)</option>
+                    <option value="climbing">Marche en montant</option>
+                </select>
+                <div id="climbing-input" style="display: none; margin-top: 10px;">
+                    <label for="meters">Mètres de montée:</label>
+                    <input type="number" id="meters" min="0" step="0.1" placeholder="Ex: 5">
+                    <p class="help-text">Calcul: 120 kcal/h (base marche) + 48 kcal/h par mètre</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="workType">B. Type de travail</label>
+                <select id="workType">
+                    <option value="0">Aucun travail supplémentaire</option>
+                    <option value="24">Travail léger impliquant la main (24 kcal/h)</option>
+                    <option value="54">Travail lourd impliquant la main (54 kcal/h)</option>
+                    <option value="60">Travail léger impliquant un seul bras (60 kcal/h)</option>
+                    <option value="108">Travail lourd impliquant un seul bras (108 kcal/h)</option>
+                    <option value="90">Travail léger impliquant les deux bras (90 kcal/h)</option>
+                    <option value="150">Travail lourd impliquant les deux bras (150 kcal/h)</option>
+                    <option value="210">Travail léger impliquant le corps (210 kcal/h)</option>
+                    <option value="300">Travail moyen impliquant le corps (300 kcal/h)</option>
+                    <option value="420">Travail lourd impliquant le corps (420 kcal/h)</option>
+                    <option value="540">Travail très lourd impliquant le corps (540 kcal/h)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="duration">Durée de l'activité</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="duration" min="0.1" step="0.1" placeholder="Ex: 30" required style="flex: 1;">
+                    <select id="durationUnit" style="width: 150px;">
+                        <option value="minutes">Minutes</option>
+                        <option value="seconds">Secondes</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="addActivity()">Ajouter l'activité</button>
+        </div>
+
+        <div class="section">
+            <h2>Activités ajoutées</h2>
+            <div id="activities-list" class="activities-list">
+                <p style="color: #999; text-align: center; padding: 20px;">Aucune activité ajoutée</p>
+            </div>
+            <button class="btn btn-danger" onclick="clearActivities()" style="margin-top: 15px;">Supprimer toutes les activités</button>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <h2>Résultats du Calcul</h2>
+            <div class="result-item">
+                <span class="result-label">Métabolisme basal moyen:</span>
+                <span class="result-value" id="basal-total">0 kcal/min</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Sommation pondérée moyenne (Σ):</span>
+                <span class="result-value" id="total-weighted">0 kcal/min</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Durée totale de la tâche:</span>
+                <span class="result-value" id="total-duration">0 min</span>
+            </div>
+            <div class="result-item" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid rgba(255, 255, 255, 0.3);">
+                <span class="result-label">Travail moyen de la tâche:</span>
+                <span class="result-value" id="average-work" style="font-size: 1.8em;">0 kcal/min</span>
+            </div>
+        </div>
+
+        <div class="section" id="classification-section" style="display: none;">
+            <h2>Classification selon RSST et AIHA</h2>
+            
+            <div id="classification-result" style="background: #2a3441; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #7a9cc6;">
+                <h3 style="color: #7a9cc6; margin-bottom: 10px;">Votre travail est classé comme:</h3>
+                <div id="classification-text" style="font-size: 1.3em; font-weight: bold; color: #e8e8e8;"></div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #7a9cc6; margin-bottom: 15px;">Classification RSST (simplifiée)</h3>
+                <table style="width: 100%; border-collapse: collapse; background: #1a2332; border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: #2a3441;">
+                            <th style="padding: 12px; text-align: left; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Catégorie</th>
+                            <th style="padding: 12px; text-align: center; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Charge de travail</th>
+                            <th style="padding: 12px; text-align: left; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Activités</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rsst-table-body">
+                        <tr class="classification-row" data-min="0" data-max="3.3" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail léger</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">jusqu'à 3.3 kcal/min<br>(200 kcal/h)</td>
+                            <td style="padding: 10px; color: #b8b8b8; font-size: 0.9em;">Commande de machine en position assise ou debout, travail léger impliquant la main ou le bras, etc.</td>
+                        </tr>
+                        <tr class="classification-row" data-min="3.3" data-max="5.8" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail moyen</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">de 3.3 à 5.8 kcal/min<br>(200 à 350 kcal/h)</td>
+                            <td style="padding: 10px; color: #b8b8b8; font-size: 0.9em;">Déplacements accompagnés d'efforts modérés de levée et de poussée, etc.</td>
+                        </tr>
+                        <tr class="classification-row" data-min="5.8" data-max="8.3" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail lourd</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">de 5.8 à 8.3 kcal/min<br>(350 à 500 kcal/h)</td>
+                            <td style="padding: 10px; color: #b8b8b8; font-size: 0.9em;">Travail au pic et à la pelle, etc.</td>
+                        </tr>
+                        <tr class="classification-row" data-min="8.3" data-max="999" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail très lourd</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">&gt; 8.3 kcal/min<br>(&gt; 500 kcal/h)</td>
+                            <td style="padding: 10px; color: #b8b8b8; font-size: 0.9em;">Travaux très exigeants physiquement</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <h3 style="color: #7a9cc6; margin-bottom: 15px;">Classification AIHA (détaillée)</h3>
+                <table style="width: 100%; border-collapse: collapse; background: #1a2332; border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: #2a3441;">
+                            <th style="padding: 12px; text-align: left; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Grade de travail</th>
+                            <th style="padding: 12px; text-align: center; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Dépense énergétique<br>(kcal/min)</th>
+                            <th style="padding: 12px; text-align: center; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Dépense énergétique<br>(8 h en kcal/j)</th>
+                            <th style="padding: 12px; text-align: center; color: #e8e8e8; border-bottom: 2px solid #3a4f6f;">Fréquence cardiaque<br>(battements/min)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="aiha-table-body">
+                        <tr class="classification-row-aiha" data-min="0" data-max="1.5" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Repos (assis)</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">1.5</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">&lt; 720</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">60-70</td>
+                        </tr>
+                        <tr class="classification-row-aiha" data-min="1.6" data-max="2.5" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail très léger</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">1.6-2.5</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">768-1200</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">65-75</td>
+                        </tr>
+                        <tr class="classification-row-aiha" data-min="2.5" data-max="5.0" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail léger</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">2.5-5.0</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">1200-2400</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">75-100</td>
+                        </tr>
+                        <tr class="classification-row-aiha" data-min="5.0" data-max="7.5" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail modéré</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">5.0-7.5</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">2400-3600</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">100-125</td>
+                        </tr>
+                        <tr class="classification-row-aiha" data-min="7.5" data-max="10.0" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail lourd</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">7.5-10.0</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">3600-4800</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">125-150</td>
+                        </tr>
+                        <tr class="classification-row-aiha" data-min="10.0" data-max="12.5" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail très lourd</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">10.0-12.5</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">4800-6000</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">150-180</td>
+                        </tr>
+                        <tr class="classification-row-aiha" data-min="12.5" data-max="999" style="border-bottom: 1px solid #2a3441;">
+                            <td style="padding: 10px; color: #d0d0d0;">Travail excessivement lourd</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">&gt; 12.5</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">&gt; 6000</td>
+                            <td style="padding: 10px; text-align: center; color: #d0d0d0;">&gt; 180</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activities = [];
+
+        // Gérer l'affichage du champ de montée
+        document.getElementById('position').addEventListener('change', function() {
+            const climbingInput = document.getElementById('climbing-input');
+            if (this.value === 'climbing') {
+                climbingInput.style.display = 'block';
+            } else {
+                climbingInput.style.display = 'none';
+            }
+        });
+
+        // Gérer le placeholder et le step selon l'unité choisie
+        document.getElementById('durationUnit').addEventListener('change', function() {
+            const durationInput = document.getElementById('duration');
+            if (this.value === 'seconds') {
+                durationInput.placeholder = 'Ex: 1800';
+                durationInput.step = '1';
+            } else {
+                durationInput.placeholder = 'Ex: 30';
+                durationInput.step = '0.1';
+            }
+        });
+
+        // Fonction helper pour obtenir la durée d'une activité en minutes
+        function getDurationInMinutes(activity) {
+            if (activity.duration !== undefined && activity.duration !== null) {
+                // Si duration existe et est déjà en minutes, l'utiliser
+                return activity.duration;
+            } else if (activity.durationValue !== undefined && activity.durationUnit !== undefined) {
+                // Sinon, convertir depuis la valeur originale et l'unité
+                return activity.durationUnit === 'seconds' 
+                    ? activity.durationValue / 60 
+                    : activity.durationValue;
+            }
+            return 0;
+        }
+
+        function addActivity() {
+            const activityTitle = document.getElementById('activityTitle').value.trim();
+            const position = document.getElementById('position').value;
+            const workType = parseInt(document.getElementById('workType').value) || 0;
+            const durationValue = parseFloat(document.getElementById('duration').value);
+            const durationUnit = document.getElementById('durationUnit').value;
+
+            if (!durationValue || durationValue <= 0) {
+                alert('Veuillez entrer une durée valide');
+                return;
+            }
+
+            // Convertir en minutes pour les calculs
+            const durationInMinutes = durationUnit === 'seconds' ? durationValue / 60 : durationValue;
+
+            let positionKcal = 0;
+            let positionLabel = '';
+
+            if (position === 'climbing') {
+                const meters = parseFloat(document.getElementById('meters').value) || 0;
+                if (meters <= 0) {
+                    alert('Veuillez entrer le nombre de mètres de montée');
+                    return;
+                }
+                positionKcal = 120 + (48 * meters);
+                positionLabel = `Marche en montant (${meters}m)`;
+            } else {
+                positionKcal = parseFloat(position);
+                const positionSelect = document.getElementById('position');
+                positionLabel = positionSelect.options[positionSelect.selectedIndex].text.split('(')[0].trim();
+            }
+
+            const workTypeLabel = document.getElementById('workType').options[document.getElementById('workType').selectedIndex].text;
+            const totalKcalPerHour = positionKcal + workType + 60; // +60 pour le métabolisme basal
+            const totalKcalPerMin = totalKcalPerHour / 60; // Conversion en kcal/min
+            const totalKcal = totalKcalPerMin * durationInMinutes; // Conversion en kcal pour la durée
+
+            const activity = {
+                id: Date.now(),
+                title: activityTitle || null, // Titre de l'activité (peut être vide)
+                positionLabel: positionLabel,
+                positionKcal: positionKcal,
+                workTypeLabel: workTypeLabel,
+                workTypeKcal: workType,
+                duration: durationInMinutes, // Stocker toujours en minutes pour les calculs
+                durationValue: durationValue, // Valeur originale
+                durationUnit: durationUnit, // Unité originale (minutes ou seconds)
+                totalKcalPerHour: totalKcalPerHour,
+                totalKcalPerMin: totalKcalPerMin, // kcal/min
+                totalKcal: totalKcal
+            };
+
+            activities.push(activity);
+            updateActivitiesList();
+            calculateResults();
+            
+            // Réinitialiser le champ titre après ajout
+            document.getElementById('activityTitle').value = '';
+        }
+
+        function updateActivitiesList() {
+            const list = document.getElementById('activities-list');
+            
+            if (activities.length === 0) {
+                list.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">Aucune activité ajoutée</p>';
+                return;
+            }
+
+            list.innerHTML = activities.map(activity => {
+                // Gérer l'affichage de la durée (compatibilité avec anciennes données)
+                let durationDisplay;
+                if (activity.durationUnit === 'seconds') {
+                    durationDisplay = `${activity.durationValue} s`;
+                } else if (activity.durationUnit === 'minutes') {
+                    durationDisplay = `${activity.durationValue} min`;
+                } else {
+                    // Fallback pour les anciennes activités (affichage en minutes)
+                    durationDisplay = `${activity.duration.toFixed(1)} min`;
+                }
+                
+                // Calculer kcal/min (utiliser totalKcalPerMin si disponible, sinon calculer)
+                const kcalPerMin = activity.totalKcalPerMin !== undefined 
+                    ? activity.totalKcalPerMin 
+                    : (activity.totalKcalPerHour / 60);
+                
+                // Afficher le titre s'il existe
+                const titleDisplay = activity.title 
+                    ? `<div style="font-size: 1.1em; font-weight: 600; color: #7a9cc6; margin-bottom: 8px;">${activity.title}</div>` 
+                    : '';
+                
+                return `
+                <div class="activity-item">
+                    <div class="activity-info">
+                        ${titleDisplay}
+                        <strong>${activity.positionLabel}</strong>
+                        ${activity.workTypeKcal > 0 ? `<br><span class="activity-details">${activity.workTypeLabel}</span>` : ''}
+                        <br><span class="activity-details">Durée: ${durationDisplay}</span>
+                        <br><span class="activity-details">Métabolisme: ${activity.totalKcalPerHour.toFixed(1)} kcal/h (Position: ${activity.positionKcal} + Travail: ${activity.workTypeKcal} + Basal: 60)</span>
+                    </div>
+                    <div class="activity-kcal">
+                        ${kcalPerMin.toFixed(2)} kcal/min
+                    </div>
+                    <button class="btn btn-danger" onclick="removeActivity(${activity.id})" style="padding: 8px 16px; margin: 0;">Supprimer</button>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function removeActivity(id) {
+            activities = activities.filter(activity => activity.id !== id);
+            updateActivitiesList();
+            calculateResults();
+        }
+
+        function clearActivities() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les activités?')) {
+                activities = [];
+                updateActivitiesList();
+                calculateResults();
+            }
+        }
+
+        function calculateResults() {
+            const resultsDiv = document.getElementById('results');
+            
+            if (activities.length === 0) {
+                resultsDiv.style.display = 'none';
+                document.getElementById('classification-section').style.display = 'none';
+                return;
+            }
+
+            resultsDiv.style.display = 'block';
+
+            // Calcul de la durée totale (en minutes)
+            const totalDuration = activities.reduce((sum, activity) => {
+                return sum + getDurationInMinutes(activity);
+            }, 0);
+
+            // Calcul de la sommation pondérée (somme des kcal × durée)
+            // Pour chaque activité: (kcal/h / 60) × durée en minutes
+            const totalWeighted = activities.reduce((sum, activity) => {
+                const durationInMinutes = getDurationInMinutes(activity);
+                const kcalPerMin = activity.totalKcalPerHour / 60;
+                return sum + (kcalPerMin * durationInMinutes);
+            }, 0);
+
+            // Métabolisme basal moyen (60 kcal/h = 1 kcal/min, constant)
+            const basalAverage = 1.0; // 60 kcal/h = 1 kcal/min
+
+            // Sommation pondérée moyenne = Sommation pondérée / Durée totale
+            const weightedAverage = totalDuration > 0 ? totalWeighted / totalDuration : 0;
+
+            // Travail moyen = Sommation pondérée / Durée totale (identique à weightedAverage)
+            const averageWork = totalDuration > 0 ? totalWeighted / totalDuration : 0;
+
+            // Formater la durée totale avec plus de précision
+            let durationDisplay = '';
+            if (totalDuration >= 60) {
+                // Afficher en heures et minutes si >= 1 heure
+                const hours = Math.floor(totalDuration / 60);
+                const minutes = (totalDuration % 60).toFixed(1);
+                durationDisplay = minutes === '0.0' 
+                    ? `${hours} h` 
+                    : `${hours} h ${minutes} min`;
+            } else {
+                // Afficher en minutes avec 2 décimales pour plus de précision
+                durationDisplay = totalDuration.toFixed(2) + ' min';
+            }
+
+            // Affichage des résultats (tout en kcal/min)
+            document.getElementById('basal-total').textContent = basalAverage.toFixed(2) + ' kcal/min';
+            document.getElementById('total-weighted').textContent = weightedAverage.toFixed(2) + ' kcal/min';
+            document.getElementById('total-duration').textContent = durationDisplay;
+            document.getElementById('average-work').textContent = averageWork.toFixed(2) + ' kcal/min';
+
+            // Classification et comparaison
+            updateClassification(averageWork);
+        }
+
+        function updateClassification(averageWork) {
+            const classificationSection = document.getElementById('classification-section');
+            const classificationText = document.getElementById('classification-text');
+            
+            if (averageWork <= 0) {
+                classificationSection.style.display = 'none';
+                return;
+            }
+
+            classificationSection.style.display = 'block';
+
+            // Classification RSST (simplifiée)
+            let rsstClassification = '';
+            let rsstColor = '';
+            if (averageWork <= 3.3) {
+                rsstClassification = 'Travail léger';
+                rsstColor = '#6fb3a0'; // Vert
+            } else if (averageWork <= 5.8) {
+                rsstClassification = 'Travail moyen';
+                rsstColor = '#f39c12'; // Orange
+            } else if (averageWork <= 8.3) {
+                rsstClassification = 'Travail lourd';
+                rsstColor = '#e74c3c'; // Rouge
+            } else {
+                rsstClassification = 'Travail très lourd';
+                rsstColor = '#8b0000'; // Rouge foncé
+            }
+
+            // Classification AIHA (détaillée)
+            let aihaClassification = '';
+            let aihaColor = '';
+            if (averageWork <= 1.5) {
+                aihaClassification = 'Repos (assis)';
+                aihaColor = '#95a5a6'; // Gris
+            } else if (averageWork <= 2.5) {
+                aihaClassification = 'Travail très léger';
+                aihaColor = '#3498db'; // Bleu clair
+            } else if (averageWork <= 5.0) {
+                aihaClassification = 'Travail léger';
+                aihaColor = '#6fb3a0'; // Vert
+            } else if (averageWork <= 7.5) {
+                aihaClassification = 'Travail modéré';
+                aihaColor = '#f39c12'; // Orange
+            } else if (averageWork <= 10.0) {
+                aihaClassification = 'Travail lourd';
+                aihaColor = '#e74c3c'; // Rouge
+            } else if (averageWork <= 12.5) {
+                aihaClassification = 'Travail très lourd';
+                aihaColor = '#c0392b'; // Rouge foncé
+            } else {
+                aihaClassification = 'Travail excessivement lourd';
+                aihaColor = '#8b0000'; // Rouge très foncé
+            }
+
+            // Afficher la classification
+            classificationText.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <span style="color: ${rsstColor};">● RSST: ${rsstClassification}</span> 
+                    <span style="color: #888; font-size: 0.9em;">(${averageWork.toFixed(2)} kcal/min)</span>
+                </div>
+                <div>
+                    <span style="color: ${aihaColor};">● AIHA: ${aihaClassification}</span>
+                </div>
+            `;
+
+            // Mettre en surbrillance les lignes correspondantes dans les tables RSST
+            const rsstRows = document.querySelectorAll('.classification-row');
+            rsstRows.forEach(row => {
+                const min = parseFloat(row.getAttribute('data-min'));
+                const max = parseFloat(row.getAttribute('data-max'));
+                let isMatch = false;
+                
+                if (min === 0) {
+                    // Première ligne: <= max
+                    isMatch = averageWork <= max;
+                } else if (max >= 999) {
+                    // Dernière ligne: > min
+                    isMatch = averageWork > min;
+                } else {
+                    // Lignes intermédiaires: > min && <= max
+                    isMatch = averageWork > min && averageWork <= max;
+                }
+                
+                if (isMatch) {
+                    row.style.backgroundColor = '#3a4f6f';
+                    row.style.borderLeft = '4px solid ' + rsstColor;
+                } else {
+                    row.style.backgroundColor = 'transparent';
+                    row.style.borderLeft = 'none';
+                }
+            });
+
+            // Mettre en surbrillance les lignes correspondantes dans les tables AIHA
+            const aihaRows = document.querySelectorAll('.classification-row-aiha');
+            aihaRows.forEach(row => {
+                const min = parseFloat(row.getAttribute('data-min'));
+                const max = parseFloat(row.getAttribute('data-max'));
+                let isMatch = false;
+                
+                if (min === 0) {
+                    // Première ligne: <= max
+                    isMatch = averageWork <= max;
+                } else if (max >= 999) {
+                    // Dernière ligne: > min
+                    isMatch = averageWork > min;
+                } else {
+                    // Lignes intermédiaires: > min && <= max
+                    isMatch = averageWork > min && averageWork <= max;
+                }
+                
+                if (isMatch) {
+                    row.style.backgroundColor = '#3a4f6f';
+                    row.style.borderLeft = '4px solid ' + aihaColor;
+                } else {
+                    row.style.backgroundColor = 'transparent';
+                    row.style.borderLeft = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
