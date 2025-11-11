@@ -15,8 +15,10 @@ import csv
 import json
 import importlib
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import ModuleType
 from typing import Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Tuple
 
 _TEXT_CLEAN_RE = re.compile(r"\s+")
@@ -28,6 +30,41 @@ def _clean_text(value: str) -> str:
     return _TEXT_CLEAN_RE.sub(" ", value.strip())
 
 
+def _normalise_for_match(value: str) -> str:
+    """Return a lowercase representation without diacritics for fuzzy matches."""
+
+    normalised = unicodedata.normalize("NFKD", value)
+    return "".join(char for char in normalised if not unicodedata.combining(char)).lower()
+
+
+def _extract_value_from_line(line: str, *, unit: Optional[str] = None) -> Optional[str]:
+    """Extract a relevant value from ``line`` using basic heuristics."""
+
+    cleaned_line = line.strip()
+    if not cleaned_line:
+        return None
+    if unit:
+        unit_pattern = re.escape(unit.lower())
+        pattern = re.compile(
+            rf"(?P<value>[0-9]+(?:[\.,][0-9]+)?)(?:(?=\s*{unit_pattern})|(?<=\s*{unit_pattern}))",
+            re.IGNORECASE,
+        )
+        match = pattern.search(cleaned_line)
+        if match:
+            return match.group("value")
+    match = re.search(r"(?P<value>[0-9]+(?:[\.,][0-9]+)?)", cleaned_line)
+    if match:
+        return match.group("value")
+    for separator in (":", "=", "-", "→"):
+        if separator in cleaned_line:
+            candidate = cleaned_line.split(separator, 1)[1].strip()
+            if unit and unit.lower() in candidate.lower():
+                candidate = candidate.lower().split(unit.lower(), 1)[0].strip()
+            if candidate:
+                return candidate
+    return None
+
+
 @dataclass
 class MetricPattern:
     """Describe how to extract a metric from free text."""
@@ -36,8 +73,9 @@ class MetricPattern:
     patterns: Sequence[re.Pattern]
     unit: Optional[str] = None
     normaliser: Optional[callable] = None
+    keywords: Sequence[str] = ()
 
-    def search(self, text: str) -> Optional[Tuple[str, str]]:
+    def search(self, text: str, *, lines: Optional[Sequence[str]] = None) -> Optional[Tuple[str, str]]:
         """Return the first match as a ``(value, snippet)`` tuple."""
 
         for pattern in self.patterns:
@@ -52,6 +90,41 @@ class MetricPattern:
                         continue
                 snippet = _clean_text(text[max(0, match.start() - 60) : match.end() + 60])
                 return str(value), snippet
+        if lines and self.keywords:
+            fallback = self._search_with_keywords(lines)
+            if fallback:
+                value, snippet = fallback
+                if self.normaliser is not None:
+                    try:
+                        value = self.normaliser(value)
+                    except Exception:  # pragma: no cover - defensive fallback
+                        return None
+                return str(value), snippet
+        return None
+
+    def _search_with_keywords(self, lines: Sequence[str]) -> Optional[Tuple[str, str]]:
+        """Fallback heuristic looking for lines containing ``keywords``."""
+
+        normalised_keywords = tuple(_normalise_for_match(keyword) for keyword in self.keywords)
+        best_candidate: Optional[Tuple[str, str, int]] = None
+        for line in lines:
+            if not line:
+                continue
+            normalised_line = _normalise_for_match(line)
+            score = sum(1 for keyword in normalised_keywords if keyword in normalised_line)
+            if not score:
+                continue
+            candidate_value = _extract_value_from_line(line, unit=self.unit)
+            if candidate_value is None:
+                continue
+            numeric_candidate = candidate_value.replace(",", ".")
+            if not re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", numeric_candidate):
+                numeric_candidate = candidate_value.strip()
+            if best_candidate is None or score > best_candidate[2]:
+                best_candidate = (numeric_candidate, line.strip(), score)
+        if best_candidate:
+            value, snippet, _score = best_candidate
+            return value, snippet
         return None
 
 
@@ -80,12 +153,14 @@ class ErgonomicDocumentExtractor:
                     re.compile(r"(?:BW|poids\s+(?:du\s+)?sujet)\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)", re.IGNORECASE),
                     re.compile(r"poids\s*:\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*kg", re.IGNORECASE),
                 ),
+                keywords=("poids", "bw", "poids du sujet"),
             ),
             MetricPattern(
                 "vo2max_ml_per_kg_min",
                 (
                     re.compile(r"vo2\s*max\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)", re.IGNORECASE),
                 ),
+                keywords=("vo2max", "vo2 max", "ml o2"),
             ),
             MetricPattern(
                 "task_duration_min",
@@ -93,29 +168,43 @@ class ErgonomicDocumentExtractor:
                     re.compile(r"dur(?:ée|ee)\s*(?:totale\s*)?[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*(?:min|minutes)", re.IGNORECASE),
                     re.compile(r"t\s*=\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*min", re.IGNORECASE),
                 ),
+                keywords=("duree", "durée", "temps", "minutes"),
             ),
             MetricPattern(
                 "sitting_time_percent",
                 (
                     re.compile(r"assis\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*%", re.IGNORECASE),
                 ),
+                unit="%",
+                keywords=("assis", "% assis", "position assis"),
             ),
             MetricPattern(
                 "standing_time_percent",
                 (
                     re.compile(r"debout\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*%", re.IGNORECASE),
                 ),
+                unit="%",
+                keywords=("debout", "% debout", "position debout"),
             ),
             MetricPattern(
                 "stooped_time_percent",
                 (
                     re.compile(r"pench[ée]" r"\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*%", re.IGNORECASE),
                 ),
+                unit="%",
+                keywords=("penche", "penché", "% penche"),
             ),
             MetricPattern(
                 "total_energy_kcal_min",
                 (
                     re.compile(r"d[ée]pense\s+energetique.*?(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*kcal/min", re.IGNORECASE),
+                ),
+                unit="kcal/min",
+                keywords=(
+                    "depense energetique totale",
+                    "dépense énergétique totale",
+                    "kcal/min",
+                    "depense totale",
                 ),
             ),
             MetricPattern(
@@ -123,6 +212,8 @@ class ErgonomicDocumentExtractor:
                 (
                     re.compile(r"(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*l\s*o2/min", re.IGNORECASE),
                 ),
+                unit="l o2/min",
+                keywords=("o2/min", "l o2", "litre o2"),
             ),
         ),
         "kodak": (
@@ -131,12 +222,15 @@ class ErgonomicDocumentExtractor:
                 (
                     re.compile(r"total\s+des\s+points\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)", re.IGNORECASE),
                 ),
+                keywords=("total des points", "score total", "points"),
             ),
             MetricPattern(
                 "vo2_l_min",
                 (
                     re.compile(r"vo2\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*l\s*o2/min", re.IGNORECASE),
                 ),
+                unit="l o2/min",
+                keywords=("vo2", "o2/min", "litres"),
             ),
             MetricPattern(
                 "main_effort_type",
@@ -144,12 +238,15 @@ class ErgonomicDocumentExtractor:
                     re.compile(r"effort\s+principal\s*[:=]\s*(?P<value>[a-zàéèù\-\s]+)", re.IGNORECASE),
                     re.compile(r"type\s+d['e]effort\s*[:=]\s*(?P<value>[a-zàéèù\-\s]+)", re.IGNORECASE),
                 ),
+                keywords=("effort principal", "type effort", "effort"),
             ),
             MetricPattern(
                 "effort_duration_percent",
                 (
                     re.compile(r"%\s+du\s+temps\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)", re.IGNORECASE),
                 ),
+                unit="%",
+                keywords=("% du temps", "temps", "pourcentage"),
             ),
         ),
         "rsst": (
@@ -158,37 +255,46 @@ class ErgonomicDocumentExtractor:
                 (
                     re.compile(r"sommation\s+pond[ée]r[ée]e.*?(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*kcal/min", re.IGNORECASE),
                 ),
+                unit="kcal/min",
+                keywords=("sommation ponderee", "pondérée", "kcal/min"),
             ),
             MetricPattern(
                 "task_duration_min",
                 (
                     re.compile(r"dur[ée]e\s+totale\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*min", re.IGNORECASE),
                 ),
+                keywords=("duree", "durée", "temps", "minutes"),
             ),
             MetricPattern(
                 "average_work_kcal_min",
                 (
                     re.compile(r"travail\s+moyen\s*[:=]\s*(?P<value>[0-9]+(?:[\.,][0-9]+)?)\s*kcal/min", re.IGNORECASE),
                 ),
+                unit="kcal/min",
+                keywords=("travail moyen", "kcal/min", "travail"),
             ),
             MetricPattern(
                 "rsst_classification",
                 (
                     re.compile(r"classification\s+rsst\s*[:=]\s*(?P<value>[a-zàéèù\-\s]+)", re.IGNORECASE),
                 ),
+                keywords=("classification rsst", "rsst", "classement"),
             ),
             MetricPattern(
                 "aiha_classification",
                 (
                     re.compile(r"classification\s+aiha\s*[:=]\s*(?P<value>[a-zàéèù\-\s]+)", re.IGNORECASE),
                 ),
+                keywords=("classification aiha", "aiha", "classement"),
             ),
         ),
     }
 
-    def __init__(self) -> None:
+    def __init__(self, *, prefer_ocr: bool = True) -> None:
+        self.prefer_ocr = prefer_ocr
         self._pdf_loader = self._try_import_pdf()
         self._image_loader = self._try_import_image_stack()
+        self._pdf_ocr_loader = self._try_import_pdf_ocr_stack()
 
     @staticmethod
     def _try_import_pdf():
@@ -207,18 +313,66 @@ class ErgonomicDocumentExtractor:
         )
         return Image, pytesseract
 
+    @staticmethod
+    def _try_import_pdf_ocr_stack() -> Optional[ModuleType]:
+        pdf2image_spec = importlib.util.find_spec("pdf2image")
+        if pdf2image_spec is None:
+            return None
+        return importlib.import_module("pdf2image")  # type: ignore
+
+    def _extract_pdf_with_pdfplumber(self, path: Path) -> str:
+        if self._pdf_loader is None:
+            raise RuntimeError(
+                "pdfplumber est requis pour lire les PDF sans OCR. Installez-le avec `pip install pdfplumber`."
+            )
+        with self._pdf_loader.open(path) as pdf:
+            parts: List[str] = []
+            for page in pdf.pages:
+                parts.append(page.extract_text() or "")
+        return "\n".join(parts)
+
+    def _extract_pdf_with_ocr(self, path: Path) -> str:
+        if self._pdf_ocr_loader is None:
+            raise RuntimeError(
+                "L'OCR des PDF nécessite le paquet `pdf2image` ainsi que l'outil Poppler. "
+                "Installez-les ou relancez la commande avec `--no-ocr`."
+            )
+        image_lib, tesseract = self._image_loader
+        if image_lib is None or tesseract is None:
+            raise RuntimeError(
+                "L'OCR nécessite Pillow, pytesseract et le moteur Tesseract installés sur le système."
+            )
+        convert_from_path = getattr(self._pdf_ocr_loader, "convert_from_path")
+        try:
+            images = convert_from_path(str(path), dpi=300)
+        except Exception as exc:  # pragma: no cover - dépendances externes
+            raise RuntimeError(
+                "Impossible d'extraire le texte via OCR. Vérifiez l'installation de pdf2image et Poppler."
+            ) from exc
+        texts: List[str] = []
+        try:
+            for image in images:
+                texts.append(tesseract.image_to_string(image, lang="fra+eng"))
+        finally:
+            for image in images:
+                try:
+                    image.close()
+                except Exception:  # pragma: no cover - nettoyage défensif
+                    pass
+        combined = "\n".join(texts)
+        if not combined.strip() and self._pdf_loader is not None:
+            # Fallback to textual extraction when OCR yields nothing despite being available.
+            return self._extract_pdf_with_pdfplumber(path)
+        return combined
+
     def extract_text(self, path: Path) -> str:
         """Extract raw text from ``path``."""
 
         suffix = path.suffix.lower()
         if suffix == ".pdf":
-            if self._pdf_loader is None:
-                raise RuntimeError("pdfplumber is required to read PDF files. Install it with `pip install pdfplumber`.")
-            with self._pdf_loader.open(path) as pdf:
-                parts: List[str] = []
-                for page in pdf.pages:
-                    parts.append(page.extract_text() or "")
-            return "\n".join(parts)
+            if self.prefer_ocr:
+                return self._extract_pdf_with_ocr(path)
+            return self._extract_pdf_with_pdfplumber(path)
         if suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp"}:
             image_lib, tesseract = self._image_loader
             if image_lib is None or tesseract is None:
@@ -233,11 +387,12 @@ class ErgonomicDocumentExtractor:
         """Parse ``text`` and return structured metrics."""
 
         cleaned_text = _clean_text(text)
+        lines = [_clean_text(line) for line in text.splitlines()]
         results: List[ExtractionResult] = []
         for method, patterns in self._METHOD_PATTERNS.items():
             result = ExtractionResult(method=method)
             for pattern in patterns:
-                match = pattern.search(cleaned_text)
+                match = pattern.search(cleaned_text, lines=lines)
                 if match:
                     value, snippet = match
                     result.metrics[pattern.name] = value
@@ -299,6 +454,11 @@ def _build_argument_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Fusionner les résultats de plusieurs fichiers en une seule table",
     )
+    parser.add_argument(
+        "--no-ocr",
+        action="store_true",
+        help="Désactiver l'OCR sur les PDF et utiliser l'extraction textuelle classique",
+    )
     return parser
 
 
@@ -306,7 +466,7 @@ def _run_cli(args: Optional[Sequence[str]]) -> int:
     parser = _build_argument_parser()
     namespace = parser.parse_args(args)
 
-    extractor = ErgonomicDocumentExtractor()
+    extractor = ErgonomicDocumentExtractor(prefer_ocr=not namespace.no_ocr)
 
     all_results: List[Tuple[Path, List[ExtractionResult]]] = []
     for input_path in namespace.input:

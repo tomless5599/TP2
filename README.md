@@ -31,6 +31,8 @@ Options principales :
 - `--format {csv,json}` : format de sortie (par défaut `csv`).
 - `--merge` : fusionner les résultats de plusieurs fichiers dans un seul bloc
   par méthode.
+- `--no-ocr` : désactiver l'OCR sur les PDF si vous préférez utiliser
+  l'extraction textuelle classique (nécessite `pdfplumber`).
 
 Exemples :
 
@@ -44,6 +46,12 @@ python -m ergodata.extractor page1.png page2.png --merge --format json --output 
 
 Le fichier de sortie contient les valeurs retrouvées ainsi que les extraits de
 texte correspondants lorsqu'on utilise le format JSON.
+
+Les PDF sont traités par défaut entièrement via OCR pour maximiser la
+détection sur les rapports scannés. L'extracteur applique ensuite des
+expressions régulières précises puis, en cas d'échec, une recherche
+heuristique par mots-clés afin de récupérer les valeurs les plus plausibles
+même lorsque la mise en page du document varie.
 
 ## Limitations
 
