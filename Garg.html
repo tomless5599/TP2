@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur Garg, Chaffin et Herrin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e8e8e8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #e8e8e8;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #b8b8b8;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #0f1624;
+            border-radius: 10px;
+            border-left: 4px solid #4a6fa5;
+        }
+
+        .section h2 {
+            color: #7a9cc6;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d0d0d0;
+            font-weight: 500;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #2a3441;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: #1a2332;
+            color: #e8e8e8;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #5a7ba8;
+            background: #1f2a3a;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #4a6fa5;
+            color: #e8e8e8;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5a7ba8;
+        }
+
+        .btn-danger {
+            background: #8b4a5c;
+        }
+
+        .btn-danger:hover {
+            background: #9b5a6c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a2332;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #2a3441;
+            padding: 6px 8px;
+            text-align: left;
+            color: #e8e8e8;
+            border-bottom: 2px solid #3a4f6f;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #2a3441;
+            color: #d0d0d0;
+            font-size: 0.85em;
+        }
+
+        tr:hover {
+            background: #1f2a3a;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #2a3441;
+            border-radius: 4px;
+            background: #0f1624;
+            color: #e8e8e8;
+            font-size: 0.85em;
+        }
+
+        input[type="number"]:focus {
+            border-color: #5a7ba8;
+            background: #1a2332;
+        }
+
+        table input[type="text"] {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #2a3441;
+            border-radius: 4px;
+            background: #0f1624;
+            color: #e8e8e8;
+            font-size: 0.85em;
+        }
+
+        table select {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #2a3441;
+            border-radius: 4px;
+            background: #0f1624;
+            color: #e8e8e8;
+            font-size: 0.85em;
+        }
+
+        table select:focus {
+            border-color: #5a7ba8;
+            background: #1a2332;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #2a3f5f 0%, #1a2a3f 100%);
+            color: #e8e8e8;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #3a4f6f;
+        }
+
+        .results h2 {
+            color: #d0d0d0;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #6fb3a0;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #a0a0a0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .task-number {
+            text-align: center;
+            font-weight: bold;
+            color: #7a9cc6;
+        }
+
+        .delete-btn {
+            padding: 3px 8px;
+            background: #8b4a5c;
+            color: #e8e8e8;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .delete-btn:hover {
+            background: #9b5a6c;
+        }
+
+        .input-params {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculateur Garg, Chaffin et Herrin</h1>
+        <p class="subtitle">Équations empiriques pour le calcul de la dépense énergétique (1978)</p>
+
+        <div class="section">
+            <h2>Paramètres du sujet</h2>
+            <div class="input-params">
+                <div class="form-group">
+                    <label for="bw">Poids du sujet (BW) - Kg</label>
+                    <input type="number" id="bw" value="80" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="sex">Sexe (S) - Homme = 1, Femme = 0</label>
+                    <select id="sex">
+                        <option value="1">Homme (1)</option>
+                        <option value="0">Femme (0)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="vo2max">VO2max du sujet - ml O2 / (Kg min)</label>
+                    <input type="number" id="vo2max" value="35" min="0" step="0.1" placeholder="Ex: 35">
+                    <p class="help-text">Valeur typique: 30-50 ml O2/(Kg min)</p>
+                </div>
+                <div class="form-group">
+                    <label for="task-duration">Durée de la tâche (t) - minutes</label>
+                    <input type="number" id="task-duration" value="10" min="0" step="0.1" placeholder="Ex: 10">
+                </div>
+            </div>
+            <div class="input-params" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label for="percent-sitting">% du temps en position assis</label>
+                    <input type="number" id="percent-sitting" value="0" min="0" max="100" step="1" placeholder="0">
+                    <p class="help-text">Pourcentage du temps total passé assis</p>
+                </div>
+                <div class="form-group">
+                    <label for="percent-standing">% du temps en position debout</label>
+                    <input type="number" id="percent-standing" value="0" min="0" max="100" step="1" placeholder="0">
+                    <p class="help-text">Pourcentage du temps total passé debout</p>
+                </div>
+                <div class="form-group">
+                    <label for="percent-bent">% du temps en position debout-penché</label>
+                    <input type="number" id="percent-bent" value="0" min="0" max="100" step="1" placeholder="0">
+                    <p class="help-text">Pourcentage du temps total passé debout penché</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tâches</h2>
+            <button class="btn" onclick="addTask()">Ajouter une tâche</button>
+            <button class="btn btn-danger" onclick="clearAllTasks()" style="margin-left: 10px;">Réinitialiser</button>
+            
+            <table id="tasks-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">#</th>
+                        <th style="width: 120px;">Description</th>
+                        <th style="width: 250px;">Technique</th>
+                        <th style="width: 50px;"># Eq.</th>
+                        <th style="width: 50px;">Répét.</th>
+                        <th style="width: 60px;">L (Kg)</th>
+                        <th style="width: 60px;">F (Kg)</th>
+                        <th style="width: 60px;">DH (m)</th>
+                        <th style="width: 60px;">h1 (m)</th>
+                        <th style="width: 60px;">h2 (m)</th>
+                        <th style="width: 60px;">G (%)</th>
+                        <th style="width: 60px;">t (min)</th>
+                        <th style="width: 60px;">V (m/s)</th>
+                        <th style="width: 70px;">Kcal/mvt</th>
+                        <th style="width: 70px;">Kcal total</th>
+                        <th style="width: 60px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tasks-body">
+                    <tr>
+                        <td colspan="16" style="text-align: center; padding: 20px; color: #888;">
+                            Aucune tâche ajoutée. Cliquez sur "Ajouter une tâche" pour commencer.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Résultats</h2>
+            <div class="results" id="results">
+                <div class="result-item">
+                    <span class="result-label">Dépense énergétique associée aux mouvements:</span>
+                    <span class="result-value" id="movements-kcal">0.00 Kcal</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">% du temps en position assis:</span>
+                    <span class="result-value" id="sitting-kcal">0.00 Kcal</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">% du temps en position debout:</span>
+                    <span class="result-value" id="standing-kcal">0.00 Kcal</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">% du temps en position debout-penché:</span>
+                    <span class="result-value" id="bent-kcal">0.00 Kcal</span>
+                </div>
+                <div class="result-item" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid rgba(255, 255, 255, 0.3);">
+                    <span class="result-label">Dépense énergétique totale M:</span>
+                    <span class="result-value" style="font-size: 1.8em;" id="total-kcal">0.00 Kcal/min</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Dépense énergétique totale M (l O2/min):</span>
+                    <span class="result-value" id="total-o2">0.00 l O2/min</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">% du VO2max:</span>
+                    <span class="result-value" id="vo2max-percent">0.00 %</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let taskCounter = 1;
+
+        // Équations de Garg, Chaffin et Herrin (1978)
+        const equations = {
+            // Position du corps (kcal/min)
+            '1': (bw) => 0.023 * bw, // Assis
+            '2': (bw) => 0.024 * bw, // Debout
+            '3': (bw) => 0.028 * bw, // Debout, penché
+
+            // Lever (kcal/lever)
+            '4': (bw, l, h1, h2, s) => { // Squat
+                if (h1 >= h2 || h2 > 0.81) return 0;
+                return Math.pow(10, -2) * (0.514 * bw * (0.81 - h1) + (2.19 * l + 0.62 * s * l) * (h2 - h1));
+            },
+            '5': (bw, l, h1, h2, s) => { // Stoop
+                if (h1 >= h2 || h2 > 0.81) return 0;
+                return Math.pow(10, -2) * (0.325 * bw * (0.81 - h1) + (1.41 * l + 0.76 * s * l) * (h2 - h1));
+            },
+            '6': (bw, l, h1, h2) => { // Une main
+                if (h1 >= h2 || h2 > 0.81) return 0;
+                return Math.pow(10, -2) * (0.352 * bw * (0.81 - h1) + 3.03 * l * (h2 - h1));
+            },
+            '7': (bw, l, h1, h2, s) => { // Bras
+                if (h1 >= h2 || h1 <= 0.81 || h2 <= 0.81) return 0;
+                return Math.pow(10, -2) * (0.062 * bw * (h2 - 0.81) + (3.19 * l - 0.52 * s * l) * (h2 - h1));
+            },
+
+            // Baisser (kcal/baisser)
+            '8': (bw, l, h1, h2) => { // Squat
+                if (h1 >= h2 || h2 > 0.81) return 0;
+                return Math.pow(10, -2) * (0.511 * bw * (0.81 - h1) + 0.701 * l * (h2 - h1));
+            },
+            '9': (bw, l, h1, h2, s) => { // Stoop
+                if (h1 >= h2 || h2 > 0.81) return 0;
+                return Math.pow(10, -2) * (0.268 * bw * (0.81 - h1) + 0.675 * l * (h2 - h1) + 5.22 * s * (0.81 - h1));
+            },
+            '10': (bw, l, h1, h2, s) => { // Bras
+                if (h1 >= h2 || h1 <= 0.81 || h2 <= 0.81) return 0;
+                return Math.pow(10, -2) * (0.093 * bw * (h2 - 0.81) + (1.02 * l + 0.37 * s * l) * (h2 - h1));
+            },
+
+            // Marcher ou transporter (kcal)
+            '11': (bw, g, t, v) => { // Sans charge
+                return Math.pow(10, -2) * (51 + 2.54 * bw * Math.pow(v, 2) + 0.379 * bw * g * v) * t;
+            },
+            '12': (bw, l, g, t, v) => { // Charge maintenue sur le côté
+                return Math.pow(10, -2) * (80 + 2.43 * bw * Math.pow(v, 2) + 4.63 * l * Math.pow(v, 2) + 4.62 * l + 0.379 * (l + bw) * g * v) * t;
+            },
+            '13': (bw, l, g, t, v) => { // Charge maintenue devant (cuisses ou ceinture)
+                return Math.pow(10, -2) * (68 + 2.54 * bw * Math.pow(v, 2) + 4.08 * l * Math.pow(v, 2) + 11.4 * l + 0.370 * (l + bw) * g * v) * t;
+            },
+
+            // Maintenir (kcal)
+            '14': (l, t) => 0.037 * l * t, // Charge sur le côté ou sur les cuisses (2 mains)
+            '15': (l, t) => 0.062 * l * t, // Charge devant au niveau ceinture (2 mains)
+            '16': (l, t) => 0.088 * l * t, // Charge (une main)
+
+            // Pousser / tirer (kcal/mouvement)
+            '17': (bw, f, dh, s) => { // Hauteur 0.8 m
+                return Math.pow(10, -2) * dh * (0.112 * bw + 1.15 * f + 0.505 * s * f);
+            },
+            '18': (bw, f, dh) => { // Hauteur 1.5 m
+                return dh * (0.086 + 0.036 * f);
+            },
+
+            // Mouvement latéral des bras (kcal/mouvement)
+            '19': (bw, l) => Math.pow(10, -2) * (0.11 * bw + 0.726 * l), // 180° debout (2 mains)
+            '20': (bw, l) => Math.pow(10, -2) * (0.097 * bw + 0.946 * l), // 180° debout (1 main)
+            '21': (bw, l, s) => Math.pow(10, -2) * (3.31 + 0.629 * l + 0.143 * s * l), // 90° debout (1 ou 2 mains)
+            '22': (bw, l, s) => Math.pow(10, -2) * (3.5 + 0.682 * l + 0.321 * s * l), // 90° assis (1 main)
+            '23': (bw, l, s) => Math.pow(10, -2) * (2.54 + 1.1 * l + 0.248 * s * l), // 90° assis (2 mains)
+
+            // Mouvement avant / arrière des bras (kcal/mouvement)
+            '24': (l, dh) => Math.pow(10, -2) * dh * (6.3 + 2.71 * l), // Assis (1 ou 2 mains)
+            '25': (l, dh) => Math.pow(10, -2) * dh * (3.57 + 1.23 * l), // Debout (1 ou 2 mains)
+
+            // Travail général des membres supérieurs (kcal)
+            '26': (t) => 0.2 * t, // Travail de la main Léger
+            '27': (t) => 0.6 * t, // Travail de la main Lourd
+            '28': (t) => 0.7 * t, // Travail d'un seul bras Léger
+            '29': (t) => 1.5 * t, // Travail d'un seul bras Lourd
+            '30': (t) => 1.2 * t, // Travail des deux bras Léger
+            '31': (t) => 2.2 * t  // Travail des deux bras Lourd
+        };
+
+        const techniqueOptions = [
+            { value: '1', label: 'Assis (BW)', params: ['bw'] },
+            { value: '2', label: 'Debout (BW)', params: ['bw'] },
+            { value: '3', label: 'Debout, penché (BW)', params: ['bw'] },
+            { value: '4', label: 'Lever SQUAT (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'] },
+            { value: '5', label: 'Lever STOOP (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'] },
+            { value: '6', label: 'Lever une main (BW, L, h1, h2) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2'] },
+            { value: '7', label: 'Lever bras (BW, L, h1, h2, S) [0.81 < h1 < h2]', params: ['bw', 'l', 'h1', 'h2', 's'] },
+            { value: '8', label: 'Baisser SQUAT (BW, L, h1, h2) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2'] },
+            { value: '9', label: 'Baisser STOOP (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'] },
+            { value: '10', label: 'Baisser bras (BW, L, h1, h2, S) [0.81 < h1 < h2]', params: ['bw', 'l', 'h1', 'h2', 's'] },
+            { value: '11', label: 'Marcher sans charge (BW, G, t, V)', params: ['bw', 'g', 't', 'v'] },
+            { value: '12', label: 'Transporter charge côté (BW, L, G, t, V)', params: ['bw', 'l', 'g', 't', 'v'] },
+            { value: '13', label: 'Transporter charge devant (BW, L, G, t, V)', params: ['bw', 'l', 'g', 't', 'v'] },
+            { value: '14', label: 'Maintenir côté/cuisses 2 mains (L, t)', params: ['l', 't'] },
+            { value: '15', label: 'Maintenir devant ceinture 2 mains (L, t)', params: ['l', 't'] },
+            { value: '16', label: 'Maintenir une main (L, t)', params: ['l', 't'] },
+            { value: '17', label: 'Pousser/tirer 0.8m (BW, F, DH, S)', params: ['bw', 'f', 'dh', 's'] },
+            { value: '18', label: 'Pousser/tirer 1.5m (BW, F, DH)', params: ['bw', 'f', 'dh'] },
+            { value: '19', label: 'Mvt latéral 180° debout 2 mains (BW, L)', params: ['bw', 'l'] },
+            { value: '20', label: 'Mvt latéral 180° debout 1 main (BW, L)', params: ['bw', 'l'] },
+            { value: '21', label: 'Mvt latéral 90° debout (BW, L, S)', params: ['bw', 'l', 's'] },
+            { value: '22', label: 'Mvt latéral 90° assis 1 main (BW, L, S)', params: ['bw', 'l', 's'] },
+            { value: '23', label: 'Mvt latéral 90° assis 2 mains (BW, L, S)', params: ['bw', 'l', 's'] },
+            { value: '24', label: 'Mvt avant/arrière assis (L, DH)', params: ['l', 'dh'] },
+            { value: '25', label: 'Mvt avant/arrière debout (L, DH)', params: ['l', 'dh'] },
+            { value: '26', label: 'Travail main Léger (t)', params: ['t'] },
+            { value: '27', label: 'Travail main Lourd (t)', params: ['t'] },
+            { value: '28', label: 'Travail un bras Léger (t)', params: ['t'] },
+            { value: '29', label: 'Travail un bras Lourd (t)', params: ['t'] },
+            { value: '30', label: 'Travail deux bras Léger (t)', params: ['t'] },
+            { value: '31', label: 'Travail deux bras Lourd (t)', params: ['t'] }
+        ];
+
+        function addTask() {
+            const task = {
+                id: taskCounter++,
+                description: '',
+                technique: '1',
+                repetition: 1,
+                l: 0,
+                f: 0,
+                dh: 0,
+                h1: 0,
+                h2: 0,
+                g: 0,
+                t: 0,
+                v: 0
+            };
+            tasks.push(task);
+            updateTasksTable();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            updateTasksTable();
+        }
+
+        function clearAllTasks() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les tâches?')) {
+                tasks = [];
+                taskCounter = 1;
+                updateTasksTable();
+            }
+        }
+
+        function updateTasksTable() {
+            const tbody = document.getElementById('tasks-body');
+            
+            if (tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="16" style="text-align: center; padding: 20px; color: #888;">Aucune tâche ajoutée. Cliquez sur "Ajouter une tâche" pour commencer.</td></tr>';
+                calculateResults();
+                return;
+            }
+
+            tbody.innerHTML = tasks.map(task => {
+                const technique = techniqueOptions.find(t => t.value === task.technique);
+                const kcalPerMove = calculateTaskKcal(task);
+                const totalKcal = kcalPerMove * (task.repetition || 1);
+
+                return `
+                    <tr>
+                        <td class="task-number">${task.id}</td>
+                        <td><input type="text" value="${task.description}" onchange="updateTask(${task.id}, 'description', this.value)" placeholder="Description"></td>
+                        <td>
+                            <select onchange="updateTask(${task.id}, 'technique', this.value)" style="min-width: 250px;">
+                                ${techniqueOptions.map(opt => 
+                                    `<option value="${opt.value}" ${task.technique === opt.value ? 'selected' : ''}>${opt.label}</option>`
+                                ).join('')}
+                            </select>
+                        </td>
+                        <td>${task.technique}</td>
+                        <td><input type="number" value="${task.repetition}" min="1" step="1" onchange="updateTask(${task.id}, 'repetition', parseFloat(this.value) || 1)" style="width: 50px;"></td>
+                        <td><input type="number" value="${task.l}" step="0.1" onchange="updateTask(${task.id}, 'l', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.f}" step="0.1" onchange="updateTask(${task.id}, 'f', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.dh}" step="0.01" onchange="updateTask(${task.id}, 'dh', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.h1}" step="0.01" onchange="updateTask(${task.id}, 'h1', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.h2}" step="0.01" onchange="updateTask(${task.id}, 'h2', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.g}" step="0.1" onchange="updateTask(${task.id}, 'g', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.t}" step="0.1" onchange="updateTask(${task.id}, 't', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td><input type="number" value="${task.v}" step="0.01" onchange="updateTask(${task.id}, 'v', parseFloat(this.value) || 0)" style="width: 55px;"></td>
+                        <td style="text-align: center; color: #6fb3a0; font-weight: bold;">${kcalPerMove.toFixed(3)}</td>
+                        <td style="text-align: center; color: #6fb3a0; font-weight: bold;">${totalKcal.toFixed(3)}</td>
+                        <td><button class="delete-btn" onclick="deleteTask(${task.id})">Suppr.</button></td>
+                    </tr>
+                `;
+            }).join('');
+            
+            calculateResults();
+        }
+
+        function updateTask(id, field, value) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task[field] = value;
+                updateTasksTable();
+            }
+        }
+
+        function calculateTaskKcal(task) {
+            const bw = parseFloat(document.getElementById('bw').value) || 0;
+            const s = parseFloat(document.getElementById('sex').value) || 0;
+            const eq = equations[task.technique];
+            
+            if (!eq) return 0;
+
+            try {
+                switch(task.technique) {
+                    case '1': case '2': case '3':
+                        return eq(bw);
+                    case '4': case '5':
+                        return eq(bw, task.l || 0, task.h1 || 0, task.h2 || 0, s);
+                    case '6':
+                        return eq(bw, task.l || 0, task.h1 || 0, task.h2 || 0);
+                    case '7':
+                        return eq(bw, task.l || 0, task.h1 || 0, task.h2 || 0, s);
+                    case '8':
+                        return eq(bw, task.l || 0, task.h1 || 0, task.h2 || 0);
+                    case '9': case '10':
+                        return eq(bw, task.l || 0, task.h1 || 0, task.h2 || 0, s);
+                    case '11':
+                        return eq(bw, task.g || 0, task.t || 0, task.v || 0);
+                    case '12': case '13':
+                        return eq(bw, task.l || 0, task.g || 0, task.t || 0, task.v || 0);
+                    case '14': case '15': case '16':
+                        return eq(task.l || 0, task.t || 0);
+                    case '17':
+                        return eq(bw, task.f || 0, task.dh || 0, s);
+                    case '18':
+                        return eq(bw, task.f || 0, task.dh || 0);
+                    case '19': case '20':
+                        return eq(bw, task.l || 0);
+                    case '21': case '22': case '23':
+                        return eq(bw, task.l || 0, s);
+                    case '24': case '25':
+                        return eq(task.l || 0, task.dh || 0);
+                    case '26': case '27': case '28': case '29': case '30': case '31':
+                        return eq(task.t || 0);
+                    default:
+                        return 0;
+                }
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        function calculateResults() {
+            const bw = parseFloat(document.getElementById('bw').value) || 0;
+            const s = parseFloat(document.getElementById('sex').value) || 0;
+            const vo2max = parseFloat(document.getElementById('vo2max').value) || 0;
+            const taskDuration = parseFloat(document.getElementById('task-duration').value) || 0;
+            const percentSitting = parseFloat(document.getElementById('percent-sitting').value) || 0;
+            const percentStanding = parseFloat(document.getElementById('percent-standing').value) || 0;
+            const percentBent = parseFloat(document.getElementById('percent-bent').value) || 0;
+
+            // Calculer la dépense énergétique des mouvements
+            let movementsKcal = 0;
+            tasks.forEach(task => {
+                const kcalPerMove = calculateTaskKcal(task);
+                movementsKcal += kcalPerMove * (task.repetition || 1);
+            });
+
+            // Calculer les positions (pourcentage du temps)
+            // Les équations 1, 2, 3 donnent kcal/min, donc on multiplie par le temps et le pourcentage
+            const sittingKcalPerMin = equations['1'](bw); // Assis
+            const standingKcalPerMin = equations['2'](bw); // Debout
+            const bentKcalPerMin = equations['3'](bw); // Debout penché
+
+            // Calculer la dépense énergétique totale pour chaque position
+            const sittingKcal = taskDuration > 0 ? (sittingKcalPerMin * taskDuration * percentSitting / 100) : 0;
+            const standingKcal = taskDuration > 0 ? (standingKcalPerMin * taskDuration * percentStanding / 100) : 0;
+            const bentKcal = taskDuration > 0 ? (bentKcalPerMin * taskDuration * percentBent / 100) : 0;
+
+            // Dépense énergétique totale (Kcal/min)
+            const totalKcalPerMin = taskDuration > 0 ? 
+                (movementsKcal + sittingKcal + standingKcal + bentKcal) / taskDuration : 0;
+
+            // Conversion en l O2/min (1 Kcal = 0.2 l O2 approximativement, mais plus précis: 1 Kcal/min ≈ 0.208 l O2/min)
+            // En fait, 1 Kcal = 0.208 l O2 pour une conversion précise
+            const totalO2PerMin = totalKcalPerMin * 0.208;
+
+            // % du VO2max
+            const vo2maxLPerMin = vo2max * bw / 1000; // Conversion ml O2/(Kg min) * Kg / 1000 = l O2/min
+            const vo2maxPercent = vo2maxLPerMin > 0 ? (totalO2PerMin / vo2maxLPerMin) * 100 : 0;
+
+            // Affichage
+            document.getElementById('movements-kcal').textContent = movementsKcal.toFixed(2) + ' Kcal';
+            document.getElementById('sitting-kcal').textContent = sittingKcal.toFixed(2) + ' Kcal';
+            document.getElementById('standing-kcal').textContent = standingKcal.toFixed(2) + ' Kcal';
+            document.getElementById('bent-kcal').textContent = bentKcal.toFixed(2) + ' Kcal';
+            document.getElementById('total-kcal').textContent = totalKcalPerMin.toFixed(2) + ' Kcal/min';
+            document.getElementById('total-o2').textContent = totalO2PerMin.toFixed(3) + ' l O2/min';
+            document.getElementById('vo2max-percent').textContent = vo2maxPercent.toFixed(2) + ' %';
+        }
+
+        // Écouter les changements des paramètres du sujet
+        document.getElementById('bw').addEventListener('input', calculateResults);
+        document.getElementById('sex').addEventListener('change', calculateResults);
+        document.getElementById('vo2max').addEventListener('input', calculateResults);
+        document.getElementById('task-duration').addEventListener('input', calculateResults);
+        document.getElementById('percent-sitting').addEventListener('input', calculateResults);
+        document.getElementById('percent-standing').addEventListener('input', calculateResults);
+        document.getElementById('percent-bent').addEventListener('input', calculateResults);
+
+        // Initialiser
+        addTask();
+    </script>
+</body>
+</html>
