@@ -251,6 +251,177 @@
             gap: 15px;
             margin-bottom: 20px;
         }
+
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            align-items: start;
+            margin-top: 20px;
+        }
+
+        .energy-visual {
+            background: rgba(15, 22, 36, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(74, 111, 165, 0.3);
+            padding: 20px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .energy-visual h3 {
+            color: #7a9cc6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bar-container {
+            margin-bottom: 18px;
+        }
+
+        .bar-label {
+            font-size: 0.85em;
+            color: #d0d0d0;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 16px;
+            border-radius: 999px;
+            background: rgba(58, 79, 111, 0.25);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #4a6fa5 0%, #6fb3a0 100%);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+            box-shadow: 0 0 15px rgba(111, 179, 160, 0.35);
+        }
+
+        .bar-fill.total {
+            background: linear-gradient(90deg, #6fb3a0 0%, #9adbc1 100%);
+        }
+
+        .bar-value {
+            font-size: 0.8em;
+            color: #9adbc1;
+            margin-top: 6px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .equation-visual {
+            background: rgba(15, 22, 36, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(111, 179, 160, 0.25);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .equation-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(111, 179, 160, 0.15), transparent 55%);
+            pointer-events: none;
+        }
+
+        .equation-visual label {
+            color: #b8f1dd;
+            font-size: 0.85em;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .equation-card {
+            background: rgba(26, 35, 50, 0.8);
+            border-radius: 10px;
+            padding: 18px;
+            border: 1px solid rgba(111, 179, 160, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .equation-card.is-active {
+            animation: equationFade 0.6s ease;
+        }
+
+        .equation-title {
+            font-size: 1em;
+            color: #e8e8e8;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .equation-formula {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: rgba(15, 22, 36, 0.9);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(74, 111, 165, 0.35);
+            color: #9adbc1;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+
+        .equation-description {
+            font-size: 0.85em;
+            color: #d0d0d0;
+            line-height: 1.4;
+        }
+
+        .equation-pulse {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 1px solid rgba(154, 219, 193, 0.2);
+            top: -60px;
+            right: -60px;
+            animation: pulse 4s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.35;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.15;
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes equationFade {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -370,6 +541,79 @@
                 </div>
             </div>
         </div>
+
+        <div class="section">
+            <h2>Animation de la méthode de Garg</h2>
+            <p class="help-text" style="margin-bottom: 20px;">
+                Visualisez l'équilibre entre les composantes de la dépense énergétique et explorez les équations empiriques de Garg, Chaffin et Herrin.
+            </p>
+            <div class="visualization-grid">
+                <div class="energy-visual">
+                    <h3>Répartition énergétique (Kcal)</h3>
+                    <div class="bar-container">
+                        <div class="bar-label">
+                            <span>Mouvements</span>
+                            <span id="bar-movements-percent">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="bar-movements"></div>
+                        </div>
+                        <div class="bar-value" id="bar-movements-value">0.00 Kcal</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-label">
+                            <span>Temps assis</span>
+                            <span id="bar-sitting-percent">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="bar-sitting"></div>
+                        </div>
+                        <div class="bar-value" id="bar-sitting-value">0.00 Kcal</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-label">
+                            <span>Temps debout</span>
+                            <span id="bar-standing-percent">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="bar-standing"></div>
+                        </div>
+                        <div class="bar-value" id="bar-standing-value">0.00 Kcal</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-label">
+                            <span>Temps debout penché</span>
+                            <span id="bar-bent-percent">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="bar-bent"></div>
+                        </div>
+                        <div class="bar-value" id="bar-bent-value">0.00 Kcal</div>
+                    </div>
+                    <div class="bar-container" style="margin-top: 25px;">
+                        <div class="bar-label">
+                            <span>Total projeté</span>
+                            <span id="bar-total-percent">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill total" id="bar-total"></div>
+                        </div>
+                        <div class="bar-value" id="bar-total-value">0.00 Kcal</div>
+                    </div>
+                    <p class="help-text" style="margin-top: 15px; text-align: right;">Projection O<sub>2</sub>: <span id="bar-o2-value">0.00 l O<sub>2</sub>/min</span></p>
+                </div>
+                <div class="equation-visual">
+                    <span class="equation-pulse"></span>
+                    <label for="equation-select">Explorer une équation</label>
+                    <select id="equation-select"></select>
+                    <div class="equation-card" id="equation-card">
+                        <div class="equation-title" id="equation-title">Sélectionnez une équation</div>
+                        <div class="equation-formula" id="equation-formula">—</div>
+                        <div class="equation-description" id="equation-description">Choisissez une équation pour voir sa formulation et son interprétation ergonomique.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -460,38 +704,76 @@
         };
 
         const techniqueOptions = [
-            { value: '1', label: 'Assis (BW)', params: ['bw'] },
-            { value: '2', label: 'Debout (BW)', params: ['bw'] },
-            { value: '3', label: 'Debout, penché (BW)', params: ['bw'] },
-            { value: '4', label: 'Lever SQUAT (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'] },
-            { value: '5', label: 'Lever STOOP (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'] },
-            { value: '6', label: 'Lever une main (BW, L, h1, h2) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2'] },
-            { value: '7', label: 'Lever bras (BW, L, h1, h2, S) [0.81 < h1 < h2]', params: ['bw', 'l', 'h1', 'h2', 's'] },
-            { value: '8', label: 'Baisser SQUAT (BW, L, h1, h2) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2'] },
-            { value: '9', label: 'Baisser STOOP (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'] },
-            { value: '10', label: 'Baisser bras (BW, L, h1, h2, S) [0.81 < h1 < h2]', params: ['bw', 'l', 'h1', 'h2', 's'] },
-            { value: '11', label: 'Marcher sans charge (BW, G, t, V)', params: ['bw', 'g', 't', 'v'] },
-            { value: '12', label: 'Transporter charge côté (BW, L, G, t, V)', params: ['bw', 'l', 'g', 't', 'v'] },
-            { value: '13', label: 'Transporter charge devant (BW, L, G, t, V)', params: ['bw', 'l', 'g', 't', 'v'] },
-            { value: '14', label: 'Maintenir côté/cuisses 2 mains (L, t)', params: ['l', 't'] },
-            { value: '15', label: 'Maintenir devant ceinture 2 mains (L, t)', params: ['l', 't'] },
-            { value: '16', label: 'Maintenir une main (L, t)', params: ['l', 't'] },
-            { value: '17', label: 'Pousser/tirer 0.8m (BW, F, DH, S)', params: ['bw', 'f', 'dh', 's'] },
-            { value: '18', label: 'Pousser/tirer 1.5m (BW, F, DH)', params: ['bw', 'f', 'dh'] },
-            { value: '19', label: 'Mvt latéral 180° debout 2 mains (BW, L)', params: ['bw', 'l'] },
-            { value: '20', label: 'Mvt latéral 180° debout 1 main (BW, L)', params: ['bw', 'l'] },
-            { value: '21', label: 'Mvt latéral 90° debout (BW, L, S)', params: ['bw', 'l', 's'] },
-            { value: '22', label: 'Mvt latéral 90° assis 1 main (BW, L, S)', params: ['bw', 'l', 's'] },
-            { value: '23', label: 'Mvt latéral 90° assis 2 mains (BW, L, S)', params: ['bw', 'l', 's'] },
-            { value: '24', label: 'Mvt avant/arrière assis (L, DH)', params: ['l', 'dh'] },
-            { value: '25', label: 'Mvt avant/arrière debout (L, DH)', params: ['l', 'dh'] },
-            { value: '26', label: 'Travail main Léger (t)', params: ['t'] },
-            { value: '27', label: 'Travail main Lourd (t)', params: ['t'] },
-            { value: '28', label: 'Travail un bras Léger (t)', params: ['t'] },
-            { value: '29', label: 'Travail un bras Lourd (t)', params: ['t'] },
-            { value: '30', label: 'Travail deux bras Léger (t)', params: ['t'] },
-            { value: '31', label: 'Travail deux bras Lourd (t)', params: ['t'] }
+            { value: '1', label: 'Assis (BW)', params: ['bw'], formula: 'M = 0.023 × BW', description: 'Posture statique assise. L\'énergie consommée est directement proportionnelle au poids du travailleur.' },
+            { value: '2', label: 'Debout (BW)', params: ['bw'], formula: 'M = 0.024 × BW', description: 'Position debout neutre. L\'énergie est légèrement supérieure à la posture assise.' },
+            { value: '3', label: 'Debout, penché (BW)', params: ['bw'], formula: 'M = 0.028 × BW', description: 'Maintien d\'une posture debout penchée vers l\'avant avec charge sur les muscles du tronc.' },
+            { value: '4', label: 'Lever SQUAT (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'], formula: 'M = 10⁻² × [0.514 × BW × (0.81 − h₁) + (2.19 × L + 0.62 × S × L) × (h₂ − h₁)]', description: 'Soulèvement en squat avec charge proche du corps. Le sexe influence l\'effort via la composante × S.' },
+            { value: '5', label: 'Lever STOOP (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'], formula: 'M = 10⁻² × [0.325 × BW × (0.81 − h₁) + (1.41 × L + 0.76 × S × L) × (h₂ − h₁)]', description: 'Soulèvement en flexion du dos (stoop). La contribution lombaire est plus importante qu\'en squat.' },
+            { value: '6', label: 'Lever une main (BW, L, h1, h2) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2'], formula: 'M = 10⁻² × [0.352 × BW × (0.81 − h₁) + 3.03 × L × (h₂ − h₁)]', description: 'Soulèvement d\'une charge à une main en dessous de la hauteur des épaules.' },
+            { value: '7', label: 'Lever bras (BW, L, h1, h2, S) [0.81 < h1 < h2]', params: ['bw', 'l', 'h1', 'h2', 's'], formula: 'M = 10⁻² × [0.062 × BW × (h₂ − 0.81) + (3.19 × L − 0.52 × S × L) × (h₂ − h₁)]', description: 'Élévation d\'une charge au-dessus des épaules (travail bras). Les femmes présentent un coût plus élevé.' },
+            { value: '8', label: 'Baisser SQUAT (BW, L, h1, h2) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2'], formula: 'M = 10⁻² × [0.511 × BW × (0.81 − h₁) + 0.701 × L × (h₂ − h₁)]', description: 'Descente contrôlée d\'une charge depuis une posture accroupie.' },
+            { value: '9', label: 'Baisser STOOP (BW, L, h1, h2, S) [h1 < h2 ≤ 0.81]', params: ['bw', 'l', 'h1', 'h2', 's'], formula: 'M = 10⁻² × [0.268 × BW × (0.81 − h₁) + 0.675 × L × (h₂ − h₁) + 5.22 × S × (0.81 − h₁)]', description: 'Abaissement de charge avec le dos courbé. La différence homme/femme apparaît via le terme 5.22 × S.' },
+            { value: '10', label: 'Baisser bras (BW, L, h1, h2, S) [0.81 < h1 < h2]', params: ['bw', 'l', 'h1', 'h2', 's'], formula: 'M = 10⁻² × [0.093 × BW × (h₂ − 0.81) + (1.02 × L + 0.37 × S × L) × (h₂ − h₁)]', description: 'Descente d\'une charge tenue à hauteur d\'épaule ou plus, sollicitant fortement les bras.' },
+            { value: '11', label: 'Marcher sans charge (BW, G, t, V)', params: ['bw', 'g', 't', 'v'], formula: 'M = 10⁻² × [51 + 2.54 × BW × V² + 0.379 × BW × G × V] × t', description: 'Marche sur terrain incliné (pente G) sans charge transportée.' },
+            { value: '12', label: 'Transporter charge côté (BW, L, G, t, V)', params: ['bw', 'l', 'g', 't', 'v'], formula: 'M = 10⁻² × [80 + 2.43 × BW × V² + 4.63 × L × V² + 4.62 × L + 0.379 × (L + BW) × G × V] × t', description: 'Marche avec charge tenue sur le côté, influencée par la vitesse et la pente.' },
+            { value: '13', label: 'Transporter charge devant (BW, L, G, t, V)', params: ['bw', 'l', 'g', 't', 'v'], formula: 'M = 10⁻² × [68 + 2.54 × BW × V² + 4.08 × L × V² + 11.4 × L + 0.370 × (L + BW) × G × V] × t', description: 'Transport de charge devant soi (cuisses ou ceinture). Charge plus contraignante sur le tronc.' },
+            { value: '14', label: 'Maintenir côté/cuisses 2 mains (L, t)', params: ['l', 't'], formula: 'M = 0.037 × L × t', description: 'Maintien statique d\'une charge avec deux mains près du corps ou sur les cuisses.' },
+            { value: '15', label: 'Maintenir devant ceinture 2 mains (L, t)', params: ['l', 't'], formula: 'M = 0.062 × L × t', description: 'Maintien d\'une charge devant la ceinture, sollicitant davantage les bras.' },
+            { value: '16', label: 'Maintenir une main (L, t)', params: ['l', 't'], formula: 'M = 0.088 × L × t', description: 'Maintien prolongé d\'une charge à une main, pénalisé par l\'asymétrie.' },
+            { value: '17', label: 'Pousser/tirer 0.8m (BW, F, DH, S)', params: ['bw', 'f', 'dh', 's'], formula: 'M = 10⁻² × DH × (0.112 × BW + 1.15 × F + 0.505 × S × F)', description: 'Poussée ou traction à hauteur de 0,8 m. Le sexe influence le coût via la composante 0.505 × S × F.' },
+            { value: '18', label: 'Pousser/tirer 1.5m (BW, F, DH)', params: ['bw', 'f', 'dh'], formula: 'M = DH × (0.086 + 0.036 × F)', description: 'Poussée ou traction à hauteur de 1,5 m nécessitant une force soutenue sur la distance DH.' },
+            { value: '19', label: 'Mvt latéral 180° debout 2 mains (BW, L)', params: ['bw', 'l'], formula: 'M = 10⁻² × (0.11 × BW + 0.726 × L)', description: 'Rotation latérale de 180° avec deux mains, debout, charge modérée.' },
+            { value: '20', label: 'Mvt latéral 180° debout 1 main (BW, L)', params: ['bw', 'l'], formula: 'M = 10⁻² × (0.097 × BW + 0.946 × L)', description: 'Rotation latérale de 180° avec une main, augmentant le coût de déséquilibre.' },
+            { value: '21', label: 'Mvt latéral 90° debout (BW, L, S)', params: ['bw', 'l', 's'], formula: 'M = 10⁻² × (3.31 + 0.629 × L + 0.143 × S × L)', description: 'Déplacement latéral de 90° debout. L\'effort varie avec la charge et le sexe.' },
+            { value: '22', label: 'Mvt latéral 90° assis 1 main (BW, L, S)', params: ['bw', 'l', 's'], formula: 'M = 10⁻² × (3.5 + 0.682 × L + 0.321 × S × L)', description: 'Mouvement latéral assis à une main. Le support du tronc réduit la part du poids du corps.' },
+            { value: '23', label: 'Mvt latéral 90° assis 2 mains (BW, L, S)', params: ['bw', 'l', 's'], formula: 'M = 10⁻² × (2.54 + 1.1 × L + 0.248 × S × L)', description: 'Version à deux mains assise, sollicitant davantage les épaules que le tronc.' },
+            { value: '24', label: 'Mvt avant/arrière assis (L, DH)', params: ['l', 'dh'], formula: 'M = 10⁻² × DH × (6.3 + 2.71 × L)', description: 'Translation avant/arrière des bras en position assise.' },
+            { value: '25', label: 'Mvt avant/arrière debout (L, DH)', params: ['l', 'dh'], formula: 'M = 10⁻² × DH × (3.57 + 1.23 × L)', description: 'Translation avant/arrière des bras debout, charge maintenue devant soi.' },
+            { value: '26', label: 'Travail main Léger (t)', params: ['t'], formula: 'M = 0.2 × t', description: 'Activité légère principalement digitale ou de précision.' },
+            { value: '27', label: 'Travail main Lourd (t)', params: ['t'], formula: 'M = 0.6 × t', description: 'Manipulation soutenue de charges élevées avec les mains.' },
+            { value: '28', label: 'Travail un bras Léger (t)', params: ['t'], formula: 'M = 0.7 × t', description: 'Travail léger effectué avec un seul bras, introduisant un déséquilibre.' },
+            { value: '29', label: 'Travail un bras Lourd (t)', params: ['t'], formula: 'M = 1.5 × t', description: 'Effort important avec un seul bras, typique d\'opérations répétitives lourdes.' },
+            { value: '30', label: 'Travail deux bras Léger (t)', params: ['t'], formula: 'M = 1.2 × t', description: 'Travail coordonné des deux bras sur une tâche légère ou modérée.' },
+            { value: '31', label: 'Travail deux bras Lourd (t)', params: ['t'], formula: 'M = 2.2 × t', description: 'Tâche exigeante mobilisant simultanément les deux bras.' }
         ];
+
+        const energyBarConfig = [
+            {
+                key: 'movements',
+                fill: document.getElementById('bar-movements'),
+                percent: document.getElementById('bar-movements-percent'),
+                value: document.getElementById('bar-movements-value')
+            },
+            {
+                key: 'sitting',
+                fill: document.getElementById('bar-sitting'),
+                percent: document.getElementById('bar-sitting-percent'),
+                value: document.getElementById('bar-sitting-value')
+            },
+            {
+                key: 'standing',
+                fill: document.getElementById('bar-standing'),
+                percent: document.getElementById('bar-standing-percent'),
+                value: document.getElementById('bar-standing-value')
+            },
+            {
+                key: 'bent',
+                fill: document.getElementById('bar-bent'),
+                percent: document.getElementById('bar-bent-percent'),
+                value: document.getElementById('bar-bent-value')
+            }
+        ];
+
+        const totalBarFill = document.getElementById('bar-total');
+        const totalBarPercent = document.getElementById('bar-total-percent');
+        const totalBarValue = document.getElementById('bar-total-value');
+        const barO2Value = document.getElementById('bar-o2-value');
+
+        const equationSelect = document.getElementById('equation-select');
+        const equationCard = document.getElementById('equation-card');
+        const equationTitle = document.getElementById('equation-title');
+        const equationFormula = document.getElementById('equation-formula');
+        const equationDescription = document.getElementById('equation-description');
 
         function addTask() {
             const task = {
@@ -574,6 +856,9 @@
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task[field] = value;
+                if (field === 'technique') {
+                    setEquationViewerTechnique(value);
+                }
                 updateTasksTable();
             }
         }
@@ -582,7 +867,7 @@
             const bw = parseFloat(document.getElementById('bw').value) || 0;
             const s = parseFloat(document.getElementById('sex').value) || 0;
             const eq = equations[task.technique];
-            
+
             if (!eq) return 0;
 
             try {
@@ -625,6 +910,81 @@
             }
         }
 
+        function updateVisualization({ movementsKcal, sittingKcal, standingKcal, bentKcal, totalKcal, totalO2 }) {
+            const segments = [
+                { key: 'movements', value: movementsKcal },
+                { key: 'sitting', value: sittingKcal },
+                { key: 'standing', value: standingKcal },
+                { key: 'bent', value: bentKcal }
+            ];
+
+            const maxValue = Math.max(totalKcal, ...segments.map(segment => segment.value), 1);
+            const sumValue = Math.max(totalKcal, 0);
+
+            segments.forEach(segment => {
+                const config = energyBarConfig.find(item => item.key === segment.key);
+                if (!config || !config.fill) {
+                    return;
+                }
+
+                const widthPercent = maxValue > 0 ? (segment.value / maxValue) * 100 : 0;
+                const percentContribution = sumValue > 0 ? (segment.value / sumValue) * 100 : 0;
+
+                config.fill.style.width = `${Math.min(widthPercent, 100)}%`;
+                if (config.percent) {
+                    config.percent.textContent = `${Math.round(percentContribution)}%`;
+                }
+                if (config.value) {
+                    config.value.textContent = `${segment.value.toFixed(2)} Kcal`;
+                }
+            });
+
+            if (totalBarFill) {
+                const totalWidth = maxValue > 0 ? (totalKcal / maxValue) * 100 : 0;
+                totalBarFill.style.width = `${Math.min(totalWidth, 100)}%`;
+            }
+
+            if (totalBarPercent) {
+                totalBarPercent.textContent = totalKcal > 0 ? '100%' : '0%';
+            }
+
+            if (totalBarValue) {
+                totalBarValue.textContent = `${totalKcal.toFixed(2)} Kcal`;
+            }
+
+            if (barO2Value) {
+                barO2Value.textContent = `${totalO2.toFixed(3)} l O₂/min`;
+            }
+        }
+
+        function populateEquationSelect() {
+            if (!equationSelect) return;
+            equationSelect.innerHTML = techniqueOptions.map(opt => `<option value="${opt.value}">${opt.value} - ${opt.label}</option>`).join('');
+        }
+
+        function setEquationViewerTechnique(value) {
+            if (!equationSelect) return;
+            const option = techniqueOptions.find(opt => opt.value === value);
+            if (!option) return;
+
+            equationSelect.value = value;
+
+            if (equationTitle) {
+                equationTitle.textContent = `Équation ${option.value} — ${option.label}`;
+            }
+            if (equationFormula) {
+                equationFormula.textContent = option.formula;
+            }
+            if (equationDescription) {
+                equationDescription.textContent = option.description;
+            }
+            if (equationCard) {
+                equationCard.classList.remove('is-active');
+                void equationCard.offsetWidth;
+                equationCard.classList.add('is-active');
+            }
+        }
+
         function calculateResults() {
             const bw = parseFloat(document.getElementById('bw').value) || 0;
             const s = parseFloat(document.getElementById('sex').value) || 0;
@@ -664,6 +1024,8 @@
             const vo2maxLPerMin = vo2max * bw / 1000; // Conversion ml O2/(Kg min) * Kg / 1000 = l O2/min
             const vo2maxPercent = vo2maxLPerMin > 0 ? (totalO2PerMin / vo2maxLPerMin) * 100 : 0;
 
+            const totalEnergyKcal = movementsKcal + sittingKcal + standingKcal + bentKcal;
+
             // Affichage
             document.getElementById('movements-kcal').textContent = movementsKcal.toFixed(2) + ' Kcal';
             document.getElementById('sitting-kcal').textContent = sittingKcal.toFixed(2) + ' Kcal';
@@ -672,6 +1034,15 @@
             document.getElementById('total-kcal').textContent = totalKcalPerMin.toFixed(2) + ' Kcal/min';
             document.getElementById('total-o2').textContent = totalO2PerMin.toFixed(3) + ' l O2/min';
             document.getElementById('vo2max-percent').textContent = vo2maxPercent.toFixed(2) + ' %';
+
+            updateVisualization({
+                movementsKcal,
+                sittingKcal,
+                standingKcal,
+                bentKcal,
+                totalKcal: totalEnergyKcal,
+                totalO2: totalO2PerMin
+            });
         }
 
         // Écouter les changements des paramètres du sujet
@@ -682,6 +1053,13 @@
         document.getElementById('percent-sitting').addEventListener('input', calculateResults);
         document.getElementById('percent-standing').addEventListener('input', calculateResults);
         document.getElementById('percent-bent').addEventListener('input', calculateResults);
+
+        if (equationSelect) {
+            populateEquationSelect();
+            equationSelect.addEventListener('change', (event) => setEquationViewerTechnique(event.target.value));
+            const defaultTechnique = techniqueOptions[0]?.value || '1';
+            setEquationViewerTechnique(defaultTechnique);
+        }
 
         // Initialiser
         addTask();
