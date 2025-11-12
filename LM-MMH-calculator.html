@@ -1,0 +1,1148 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculatrice LM-MMH – MAL</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        h1, h2, h3 {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        a {
+            color: #60a5fa;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 25px 60px rgba(2, 6, 23, 0.45);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        @media (min-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.95rem;
+            color: #cbd5f5;
+        }
+
+        select,
+        input[type="number"],
+        input[type="text"] {
+            appearance: none;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        select:focus,
+        input:focus,
+        textarea:focus {
+            outline: 2px solid rgba(96, 165, 250, 0.5);
+            outline-offset: 1px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .muted {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .results {
+            display: grid;
+            gap: 12px;
+        }
+
+        .result-card {
+            padding: 16px 18px;
+            background: rgba(15, 23, 42, 0.65);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .result-card strong {
+            font-size: 1.65rem;
+            color: #60a5fa;
+            display: block;
+        }
+
+        .error {
+            color: #fda4af;
+            font-weight: 600;
+        }
+
+        details {
+            background: rgba(15, 23, 42, 0.65);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            padding: 16px 18px;
+        }
+
+        details + details {
+            margin-top: 12px;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.92rem;
+        }
+
+        th,
+        td {
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+        .movement-table {
+            margin-top: 0;
+        }
+
+        .movement-table tbody tr.group-row th {
+            background: rgba(96, 165, 250, 0.15);
+            color: #f8fafc;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .movement-table tbody tr td:first-child {
+            font-weight: 600;
+            width: 22%;
+        }
+
+        .movement-table tbody tr td:nth-child(2) {
+            font-family: "Fira Code", "SFMono-Regular", ui-monospace, monospace;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .movement-legend {
+            display: grid;
+            gap: 6px;
+            padding: 12px 0 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .movement-legend span {
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .factor-item {
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            display: grid;
+            gap: 10px;
+        }
+
+        .factor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            background: rgba(96, 165, 250, 0.18);
+            color: #cbd5f5;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <h1>Calculatrice LM-MMH</h1>
+            <p class="muted">Outil d'estimation de la charge maximale acceptable (MAL) suivant les équations LM-MMH (Snook &amp; Ciriello, 1991) pour les femmes et les hommes. Les formules, coefficients de variation et facteurs de correction proviennent des tableaux et sections 2.2.4–2.2.6 du guide.</p>
+        </header>
+
+        <section class="panel">
+            <h2>1. Paramètres d'entrée</h2>
+            <div class="grid grid-2">
+                <div class="panel" style="background: rgba(15,23,42,0.55); border: 1px solid rgba(148,163,184,0.35);">
+                    <h3>Scénario LM-MMH</h3>
+                    <div class="row">
+                        <label>Population
+                            <select id="gender">
+                                <option value="female">Femmes</option>
+                                <option value="male">Hommes</option>
+                            </select>
+                        </label>
+                        <label>Mouvement
+                            <select id="movement"></select>
+                        </label>
+                        <label>Centile visé (%)
+                            <input type="number" id="percentile" min="0.1" max="99.9" step="0.1" value="25">
+                        </label>
+                    </div>
+                    <ul class="movement-legend">
+                        <li><span>Manutentions verticales :</span> Lever, Baisser</li>
+                        <li><span>Pousser / Tirer – force initiale :</span> efforts de démarrage</li>
+                        <li><span>Pousser / Tirer – force soutenue :</span> efforts de maintien</li>
+                        <li><span>Transporter :</span> déplacement continu d'une charge</li>
+                    </ul>
+                    <p class="muted">Le MAL publié correspond au 50e centile (valeur moyenne). Choisissez un centile plus faible pour protéger une plus grande proportion de la main-d'œuvre.</p>
+                    <div class="chip">Coefficient de variation (CV) : <span id="cv-display">—</span></div>
+                    <div class="chip">Équation : <span id="equation-label">—</span></div>
+                </div>
+
+                <div class="panel" style="background: rgba(15,23,42,0.55); border: 1px solid rgba(148,163,184,0.35);">
+                    <h3>Variables opérationnelles</h3>
+                    <div class="row" id="input-fields"></div>
+                    <div class="muted" id="derived-values"></div>
+                    <p class="muted" id="limits-text"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>2. Facteurs de correction (section 2.2.5)</h2>
+            <div class="grid">
+                <div class="factor-item">
+                    <div class="factor-header">
+                        <h3>Durée du travail</h3>
+                        <label class="muted"><input type="checkbox" id="duration-toggle" checked> Appliquer</label>
+                    </div>
+                    <div class="row">
+                        <label>Durée (heures)
+                            <input type="number" id="duration-hours" min="1" max="16" step="0.5" value="8">
+                        </label>
+                        <div>
+                            <span class="chip">Facteur : <span id="duration-factor">—</span></span>
+                            <p class="muted">Femmes : (100,81 − 1,94 × h)/100 • Hommes : (101,42 − 3,40 × h)/100</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="factor-item">
+                    <div class="factor-header">
+                        <h3>Qualité de la prise</h3>
+                        <label class="muted"><input type="checkbox" id="grip-toggle"> Poignées absentes / inadéquates</label>
+                    </div>
+                    <p class="muted">Réduction de 16 % lorsque la préhension est médiocre : facteur = 0,84.</p>
+                </div>
+
+                <div class="factor-item">
+                    <div class="factor-header">
+                        <h3>Torsion du tronc</h3>
+                        <label class="muted"><input type="checkbox" id="torsion-toggle"> Appliquer</label>
+                    </div>
+                    <div class="row">
+                        <label>Angle de torsion (°)
+                            <input type="number" id="torsion-angle" min="0" max="90" step="1" value="15">
+                        </label>
+                        <div>
+                            <span class="chip">Facteur : <span id="torsion-factor">—</span></span>
+                            <p class="muted">Facteur ≈ 1 − 0,0032 × angle (méthode NIOSH).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="factor-item">
+                    <div class="factor-header">
+                        <h3>Guidage horizontal</h3>
+                        <label class="muted"><input type="checkbox" id="guidage-toggle"> Guidage de précision requis</label>
+                    </div>
+                    <p class="muted">Réduction recommandée de 10 % (facteur = 0,90).</p>
+                </div>
+
+                <div class="factor-item">
+                    <div class="factor-header">
+                        <h3>Instabilité du contenu</h3>
+                        <label class="muted"><input type="checkbox" id="instability-toggle"> Contenu instable</label>
+                    </div>
+                    <p class="muted">Réduction de 31 % pour une charge instable (facteur = 0,69).</p>
+                </div>
+
+                <div class="factor-item">
+                    <div class="factor-header">
+                        <h3>Facteur personnalisé</h3>
+                        <label class="muted"><input type="checkbox" id="custom-toggle"> Activer</label>
+                    </div>
+                    <div class="row">
+                        <label>Valeur multiplicative
+                            <input type="number" id="custom-factor" min="0" step="0.01" value="1.00">
+                        </label>
+                        <label>Commentaire
+                            <input type="text" id="custom-note" placeholder="Ex. EPI, conditions environnementales...">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>3. Résultats</h2>
+            <div id="messages" class="muted"></div>
+            <div class="results">
+                <div class="result-card">
+                    <span>Charge maximale acceptable – 50e centile</span>
+                    <strong id="mal-base">—</strong>
+                    <span class="muted">Sans facteurs de correction.</span>
+                </div>
+                <div class="result-card">
+                    <span>Charge maximale acceptable corrigée</span>
+                    <strong id="mal-corrected">—</strong>
+                    <span class="muted">Produit des facteurs : <span id="factor-product">—</span></span>
+                </div>
+                <div class="result-card">
+                    <span>MAL au centile visé</span>
+                    <strong id="mal-percentile">—</strong>
+                    <span class="muted">Calcul normal : MAL<sub>p</sub> = m × (1 + z<sub>p</sub> × CV)</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>4. Références des tableaux</h2>
+            <details open>
+                <summary>Tableau 1 – Définition des paramètres</summary>
+                <div class="muted">Unités en mètres (m) et mouvements/minute, sauf mention contraire.</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paramètre</th>
+                            <th>Description</th>
+                            <th>Lever / baisser</th>
+                            <th>Pousser / tirer</th>
+                            <th>Transporter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>H</strong></td>
+                            <td>Position horizontale : distance des mains au point médian des chevilles.</td>
+                            <td>Définir H<sub>orig</sub> et H<sub>dest</sub>. Utiliser la moyenne (ou la valeur la plus défavorable). Limites : 0,20–0,68 m (femmes), 0,25–0,73 m (hommes).</td>
+                            <td>—</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>V</strong></td>
+                            <td>Position verticale des mains.</td>
+                            <td>Définir V<sub>haut</sub> et V<sub>bas</sub>. V<sub>max</sub> = portée verticale (≈ 1,96 m femmes, 2,14 m hommes).</td>
+                            <td>Intervalle recommandé : 0,58–1,33 m (femmes), 0,63–1,44 m (hommes).</td>
+                            <td>Intervalle recommandé : 0,71–1,03 m (femmes), 0,78–1,10 m (hommes).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>VRM</strong></td>
+                            <td>Milieu du déplacement vertical : (V<sub>haut</sub> + V<sub>bas</sub>)/2.</td>
+                            <td>Calcul direct depuis V<sub>haut</sub> et V<sub>bas</sub>.</td>
+                            <td>—</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DV</strong></td>
+                            <td>Distance verticale : V<sub>haut</sub> − V<sub>bas</sub>.</td>
+                            <td>Minimum 0,25 m.</td>
+                            <td>—</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>F</strong></td>
+                            <td>Fréquence (mouvements/minute).</td>
+                            <td>1 mouvement/jour à 20 mouvements/minute.</td>
+                            <td>1 mouvement/jour à 10 mouvements/minute.</td>
+                            <td>1 mouvement/jour à 10 mouvements/minute.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DV × F</strong></td>
+                            <td>Vitesse verticale moyenne.</td>
+                            <td>Maximum 11 m/minute (limite énergétique).</td>
+                            <td>—</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DH</strong></td>
+                            <td>Distance horizontale (pousser / tirer / transporter).</td>
+                            <td>—</td>
+                            <td>Plage 2,1–61 m.</td>
+                            <td>Plage 2,1–10 m.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DH × F</strong></td>
+                            <td>Vitesse horizontale moyenne.</td>
+                            <td>—</td>
+                            <td>Maximum 37 m/minute.</td>
+                            <td>Maximum 29 m/minute.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Tableau 2 – Équations LM-MMH (Femmes)</summary>
+                <table class="movement-table">
+                    <thead>
+                        <tr>
+                            <th>Mouvement</th>
+                            <th>Équation du MAL (kg)</th>
+                            <th>CV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="group-row">
+                            <th colspan="3">Manutentions verticales</th>
+                        </tr>
+                        <tr>
+                            <td>Lever</td>
+                            <td>34,9 × [1,2602 − H/0,7686] × [0,9877 + VRM/13,69 − VRM²/9,221] × [0,8199 − ln(DV)/7,698] × [0,6767 − ln(F)/12,59 − (ln(F))²/238,2]</td>
+                            <td>0,260</td>
+                        </tr>
+                        <tr>
+                            <td>Baisser</td>
+                            <td>37,0 × [1,2602 − H/0,7686] × [0,9877 + VRM/13,69 − VRM²/9,221] × [0,8199 − ln(DV)/7,696] × [0,6767 − ln(F)/12,59 − (ln(F))²/229,2]</td>
+                            <td>0,307</td>
+                        </tr>
+                        <tr class="group-row">
+                            <th colspan="3">Pousser / Tirer – force initiale</th>
+                        </tr>
+                        <tr>
+                            <td>Pousser – force initiale</td>
+                            <td>36,9 × [−0,5304 + V/0,3361 − V²/0,6915] × [1,0286 − DH/72,22 + DH²/9 782] × [0,7251 − ln(F)/13,19 − (ln(F))²/197,3]</td>
+                            <td>0,214</td>
+                        </tr>
+                        <tr>
+                            <td>Tirer – force initiale</td>
+                            <td>36,9 × [−0,5304 + V/0,3361 − V²/0,6915] × [1,0286 − DH/72,22 + DH²/9 782] × [0,7251 − ln(F)/13,19 − (ln(F))²/197,3]</td>
+                            <td>0,234</td>
+                        </tr>
+                        <tr class="group-row">
+                            <th colspan="3">Pousser / Tirer – force soutenue</th>
+                        </tr>
+                        <tr>
+                            <td>Pousser – force soutenue</td>
+                            <td>25,5 × [−0,6539 + V/0,2941 − V²/0,5722] × [1,0391 − DH/52,91 + DH²/7 975] × [0,6086 − ln(F)/11,95 − (ln(F))²/304,4]</td>
+                            <td>0,286</td>
+                        </tr>
+                        <tr>
+                            <td>Tirer – force soutenue</td>
+                            <td>25,5 × [−0,6539 + V/0,2941 − V²/0,5722] × [1,0391 − DH/52,91 + DH²/7 975] × [0,6086 − ln(F)/11,95 − (ln(F))²/304,4]</td>
+                            <td>0,298</td>
+                        </tr>
+                        <tr class="group-row">
+                            <th colspan="3">Transporter</th>
+                        </tr>
+                        <tr>
+                            <td>Transporter</td>
+                            <td>28,6 × [1,1645 − V/4,437] × [1,0101 − DH/207,8] × [0,6224 − ln(F)/16,33]</td>
+                            <td>0,231</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Tableau 3 – Équations LM-MMH (Hommes)</summary>
+                <table class="movement-table">
+                    <thead>
+                        <tr>
+                            <th>Mouvement</th>
+                            <th>Équation du MAL (kg)</th>
+                            <th>CV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="group-row">
+                            <th colspan="3">Manutentions verticales</th>
+                        </tr>
+                        <tr>
+                            <td>Lever</td>
+                            <td>82,6 × [1,3532 − H/0,7079] × [0,7746 + VRM/1,912 − VRM²/3,296] × [0,8695 − ln(DV)/10,62] × [0,6259 − ln(F)/9,092 − (ln(F))²/125,0]</td>
+                            <td>0,276</td>
+                        </tr>
+                        <tr>
+                            <td>Baisser</td>
+                            <td>95,9 × [1,3532 − H/0,7079] × [0,7746 + VRM/1,912 − VRM²/3,296] × [0,8695 − ln(DV)/10,62] × [0,5773 − ln(F)/10,8 − (ln(F))²/255,9]</td>
+                            <td>0,304</td>
+                        </tr>
+                        <tr class="group-row">
+                            <th colspan="3">Pousser / Tirer – force initiale</th>
+                        </tr>
+                        <tr>
+                            <td>Pousser – force initiale</td>
+                            <td>70,3 × [1,2737 − V/1,335 + V²/2,576] × [1,0790 − ln(DH)/9,392] × [0,6281 − ln(F)/13,07 − (ln(F))²/379,5]</td>
+                            <td>0,231</td>
+                        </tr>
+                        <tr>
+                            <td>Tirer – force initiale</td>
+                            <td>69,8 × [1,7186 − V/0,6888 + V²/2,025] × [1,0790 − ln(DH)/9,392] × [0,6281 − ln(F)/13,07 − (ln(F))²/379,5]</td>
+                            <td>0,238</td>
+                        </tr>
+                        <tr class="group-row">
+                            <th colspan="3">Pousser / Tirer – force soutenue</th>
+                        </tr>
+                        <tr>
+                            <td>Pousser – force soutenue</td>
+                            <td>65,3 × [2,2940 − V/0,3345 + V²/0,6887] × [1,1035 − ln(DH)/7,170] × [0,4896 − ln(F)/10,20 − (ln(F))²/403,9]</td>
+                            <td>0,267</td>
+                        </tr>
+                        <tr>
+                            <td>Tirer – force soutenue</td>
+                            <td>61,0 × [2,1977 − V/0,3850 + V²/0,9047] × [1,1035 − ln(DH)/7,170] × [0,4896 − ln(F)/10,20 − (ln(F))²/403,9]</td>
+                            <td>0,257</td>
+                        </tr>
+                        <tr class="group-row">
+                            <th colspan="3">Transporter</th>
+                        </tr>
+                        <tr>
+                            <td>Transporter</td>
+                            <td>74,9 × [1,5585 − V/1,417] × [1,1172 − ln(DH)/6,332] × [0,5149 − ln(F)/7,958 − (ln(F))²/131,1]</td>
+                            <td>0,278</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Notes sur l'application (section 2.2.6)</summary>
+                <ul class="muted">
+                    <li>Pour une main-d'œuvre mixte, viser une conception permettant à 90 % des travailleurs (≈ 99 % des hommes et 75 % des femmes) de réaliser la tâche.</li>
+                    <li>Le MAL au 25e centile est fréquemment recommandé afin d'accommoder au moins 75 % des femmes.</li>
+                    <li>Si la charge réelle excède le MAL corrigé, planifier des mesures de contrôle (section 4 du guide).</li>
+                    <li>Le coefficient de variation (CV = s/m) permet d'estimer l'écart type et de déterminer d'autres centiles.</li>
+                </ul>
+            </details>
+        </section>
+
+        <footer>
+            Calculs en kilogrammes. Données : François Gauthier &amp; Pierre C. Dessureault, version 19 novembre 2024.
+        </footer>
+    </div>
+
+    <script>
+        const parameterTemplates = {
+            H: { label: "H – distance horizontale (m)", default: 0.35, step: 0.01, min: 0.1, max: 1.0 },
+            VTop: { label: "V haut (m)", default: 1.0, step: 0.01, min: 0.2, max: 2.4 },
+            VBottom: { label: "V bas (m)", default: 0.5, step: 0.01, min: 0.0, max: 2.0 },
+            VSingle: { label: "V (m)", default: 0.9, step: 0.01, min: 0.2, max: 2.0 },
+            DV: { label: "DV (m)", default: 0.4, step: 0.01, min: 0.05, max: 2.0 },
+            VRM: { label: "VRM (m)", default: 0.75, step: 0.01, min: 0.1, max: 2.0 },
+            DH: { label: "DH (m)", default: 5.0, step: 0.1, min: 0.5, max: 80 },
+            F: { label: "Fréquence (mouvements/min)", default: 6, step: 0.1, min: 0.01, max: 25 }
+        };
+
+        const dataset = {
+            female: {
+                label: "Femmes",
+                movements: {
+                    lever: {
+                        label: "Lever",
+                        cv: 0.260,
+                        fields: ["H", "VTop", "VBottom", "F"],
+                        equationLabel: "34,9 × [1,2602 − H/0,7686] × [0,9877 + VRM/13,69 − VRM²/9,221] × [0,8199 − ln(DV)/7,698] × [0,6767 − ln(F)/12,59 − (ln(F))²/238,2]",
+                        limits: "H : 0,20–0,68 m • DV ≥ 0,25 m • F ≤ 20 mvt/min",
+                        compute: ({ H, VTop, VBottom, F }) => {
+                            const VRM = (VTop + VBottom) / 2;
+                            const DV = Math.max(Math.abs(VTop - VBottom), 1e-6);
+                            const logDV = Math.log(DV);
+                            const logF = Math.log(F);
+                            return 34.9 *
+                                (1.2602 - H / 0.7686) *
+                                (0.9877 + VRM / 13.69 - (VRM ** 2) / 9.221) *
+                                (0.8199 - logDV / 7.698) *
+                                (0.6767 - logF / 12.59 - (logF ** 2) / 238.2);
+                        },
+                        derive: ({ VTop, VBottom }) => ({ VRM: (VTop + VBottom) / 2, DV: Math.abs(VTop - VBottom) })
+                    },
+                    baisser: {
+                        label: "Baisser",
+                        cv: 0.307,
+                        fields: ["H", "VTop", "VBottom", "F"],
+                        equationLabel: "37,0 × [1,2602 − H/0,7686] × [0,9877 + VRM/13,69 − VRM²/9,221] × [0,8199 − ln(DV)/7,696] × [0,6767 − ln(F)/12,59 − (ln(F))²/229,2]",
+                        limits: "H : 0,20–0,68 m • DV ≥ 0,25 m • F ≤ 20 mvt/min",
+                        compute: ({ H, VTop, VBottom, F }) => {
+                            const VRM = (VTop + VBottom) / 2;
+                            const DV = Math.max(Math.abs(VTop - VBottom), 1e-6);
+                            const logDV = Math.log(DV);
+                            const logF = Math.log(F);
+                            return 37.0 *
+                                (1.2602 - H / 0.7686) *
+                                (0.9877 + VRM / 13.69 - (VRM ** 2) / 9.221) *
+                                (0.8199 - logDV / 7.696) *
+                                (0.6767 - logF / 12.59 - (logF ** 2) / 229.2);
+                        },
+                        derive: ({ VTop, VBottom }) => ({ VRM: (VTop + VBottom) / 2, DV: Math.abs(VTop - VBottom) })
+                    },
+                    pousser_initiale: {
+                        label: "Pousser – force initiale",
+                        cv: 0.214,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "36,9 × [−0,5304 + V/0,3361 − V²/0,6915] × [1,0286 − DH/72,22 + DH²/9 782] × [0,7251 − ln(F)/13,19 − (ln(F))²/197,3]",
+                        limits: "V : 0,58–1,33 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logF = Math.log(F);
+                            return 36.9 *
+                                (-0.5304 + VSingle / 0.3361 - (VSingle ** 2) / 0.6915) *
+                                (1.0286 - DH / 72.22 + (DH ** 2) / 9782) *
+                                (0.7251 - logF / 13.19 - (logF ** 2) / 197.3);
+                        }
+                    },
+                    pousser_soutenue: {
+                        label: "Pousser – force soutenue",
+                        cv: 0.286,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "25,5 × [−0,6539 + V/0,2941 − V²/0,5722] × [1,0391 − DH/52,91 + DH²/7 975] × [0,6086 − ln(F)/11,95 − (ln(F))²/304,4]",
+                        limits: "V : 0,58–1,33 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logF = Math.log(F);
+                            return 25.5 *
+                                (-0.6539 + VSingle / 0.2941 - (VSingle ** 2) / 0.5722) *
+                                (1.0391 - DH / 52.91 + (DH ** 2) / 7975) *
+                                (0.6086 - logF / 11.95 - (logF ** 2) / 304.4);
+                        }
+                    },
+                    tirer_initiale: {
+                        label: "Tirer – force initiale",
+                        cv: 0.234,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "36,9 × [−0,5304 + V/0,3361 − V²/0,6915] × [1,0286 − DH/72,22 + DH²/9 782] × [0,7251 − ln(F)/13,19 − (ln(F))²/197,3]",
+                        limits: "V : 0,58–1,33 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logF = Math.log(F);
+                            return 36.9 *
+                                (-0.5304 + VSingle / 0.3361 - (VSingle ** 2) / 0.6915) *
+                                (1.0286 - DH / 72.22 + (DH ** 2) / 9782) *
+                                (0.7251 - logF / 13.19 - (logF ** 2) / 197.3);
+                        }
+                    },
+                    tirer_soutenue: {
+                        label: "Tirer – force soutenue",
+                        cv: 0.298,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "25,5 × [−0,6539 + V/0,2941 − V²/0,5722] × [1,0391 − DH/52,91 + DH²/7 975] × [0,6086 − ln(F)/11,95 − (ln(F))²/304,4]",
+                        limits: "V : 0,58–1,33 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logF = Math.log(F);
+                            return 25.5 *
+                                (-0.6539 + VSingle / 0.2941 - (VSingle ** 2) / 0.5722) *
+                                (1.0391 - DH / 52.91 + (DH ** 2) / 7975) *
+                                (0.6086 - logF / 11.95 - (logF ** 2) / 304.4);
+                        }
+                    },
+                    transporter: {
+                        label: "Transporter",
+                        cv: 0.231,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "28,6 × [1,1645 − V/4,437] × [1,0101 − DH/207,8] × [0,6224 − ln(F)/16,33]",
+                        limits: "V : 0,71–1,03 m recommandé • DH : 2,1–10 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logF = Math.log(F);
+                            return 28.6 *
+                                (1.1645 - VSingle / 4.437) *
+                                (1.0101 - DH / 207.8) *
+                                (0.6224 - logF / 16.33);
+                        }
+                    }
+                }
+            },
+            male: {
+                label: "Hommes",
+                movements: {
+                    lever: {
+                        label: "Lever",
+                        cv: 0.276,
+                        fields: ["H", "VTop", "VBottom", "F"],
+                        equationLabel: "82,6 × [1,3532 − H/0,7079] × [0,7746 + VRM/1,912 − VRM²/3,296] × [0,8695 − ln(DV)/10,62] × [0,6259 − ln(F)/9,092 − (ln(F))²/125,0]",
+                        limits: "H : 0,25–0,73 m • DV ≥ 0,25 m • F ≤ 20 mvt/min",
+                        compute: ({ H, VTop, VBottom, F }) => {
+                            const VRM = (VTop + VBottom) / 2;
+                            const DV = Math.max(Math.abs(VTop - VBottom), 1e-6);
+                            const logDV = Math.log(DV);
+                            const logF = Math.log(F);
+                            return 82.6 *
+                                (1.3532 - H / 0.7079) *
+                                (0.7746 + VRM / 1.912 - (VRM ** 2) / 3.296) *
+                                (0.8695 - logDV / 10.62) *
+                                (0.6259 - logF / 9.092 - (logF ** 2) / 125.0);
+                        },
+                        derive: ({ VTop, VBottom }) => ({ VRM: (VTop + VBottom) / 2, DV: Math.abs(VTop - VBottom) })
+                    },
+                    baisser: {
+                        label: "Baisser",
+                        cv: 0.304,
+                        fields: ["H", "VTop", "VBottom", "F"],
+                        equationLabel: "95,9 × [1,3532 − H/0,7079] × [0,7746 + VRM/1,912 − VRM²/3,296] × [0,8695 − ln(DV)/10,62] × [0,5773 − ln(F)/10,8 − (ln(F))²/255,9]",
+                        limits: "H : 0,25–0,73 m • DV ≥ 0,25 m • F ≤ 20 mvt/min",
+                        compute: ({ H, VTop, VBottom, F }) => {
+                            const VRM = (VTop + VBottom) / 2;
+                            const DV = Math.max(Math.abs(VTop - VBottom), 1e-6);
+                            const logDV = Math.log(DV);
+                            const logF = Math.log(F);
+                            return 95.9 *
+                                (1.3532 - H / 0.7079) *
+                                (0.7746 + VRM / 1.912 - (VRM ** 2) / 3.296) *
+                                (0.8695 - logDV / 10.62) *
+                                (0.5773 - logF / 10.8 - (logF ** 2) / 255.9);
+                        },
+                        derive: ({ VTop, VBottom }) => ({ VRM: (VTop + VBottom) / 2, DV: Math.abs(VTop - VBottom) })
+                    },
+                    pousser_initiale: {
+                        label: "Pousser – force initiale",
+                        cv: 0.231,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "70,3 × [1,2737 − V/1,335 + V²/2,576] × [1,0790 − ln(DH)/9,392] × [0,6281 − ln(F)/13,07 − (ln(F))²/379,5]",
+                        limits: "V : 0,63–1,44 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logDH = Math.log(DH);
+                            const logF = Math.log(F);
+                            return 70.3 *
+                                (1.2737 - VSingle / 1.335 + (VSingle ** 2) / 2.576) *
+                                (1.0790 - logDH / 9.392) *
+                                (0.6281 - logF / 13.07 - (logF ** 2) / 379.5);
+                        }
+                    },
+                    pousser_soutenue: {
+                        label: "Pousser – force soutenue",
+                        cv: 0.267,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "65,3 × [2,2940 − V/0,3345 + V²/0,6887] × [1,1035 − ln(DH)/7,170] × [0,4896 − ln(F)/10,20 − (ln(F))²/403,9]",
+                        limits: "V : 0,63–1,44 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logDH = Math.log(DH);
+                            const logF = Math.log(F);
+                            return 65.3 *
+                                (2.2940 - VSingle / 0.3345 + (VSingle ** 2) / 0.6887) *
+                                (1.1035 - logDH / 7.170) *
+                                (0.4896 - logF / 10.20 - (logF ** 2) / 403.9);
+                        }
+                    },
+                    tirer_initiale: {
+                        label: "Tirer – force initiale",
+                        cv: 0.238,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "69,8 × [1,7186 − V/0,6888 + V²/2,025] × [1,0790 − ln(DH)/9,392] × [0,6281 − ln(F)/13,07 − (ln(F))²/379,5]",
+                        limits: "V : 0,63–1,44 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logDH = Math.log(DH);
+                            const logF = Math.log(F);
+                            return 69.8 *
+                                (1.7186 - VSingle / 0.6888 + (VSingle ** 2) / 2.025) *
+                                (1.0790 - logDH / 9.392) *
+                                (0.6281 - logF / 13.07 - (logF ** 2) / 379.5);
+                        }
+                    },
+                    tirer_soutenue: {
+                        label: "Tirer – force soutenue",
+                        cv: 0.257,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "61,0 × [2,1977 − V/0,3850 + V²/0,9047] × [1,1035 − ln(DH)/7,170] × [0,4896 − ln(F)/10,20 − (ln(F))²/403,9]",
+                        limits: "V : 0,63–1,44 m recommandé • DH : 2,1–61 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logDH = Math.log(DH);
+                            const logF = Math.log(F);
+                            return 61.0 *
+                                (2.1977 - VSingle / 0.3850 + (VSingle ** 2) / 0.9047) *
+                                (1.1035 - logDH / 7.170) *
+                                (0.4896 - logF / 10.20 - (logF ** 2) / 403.9);
+                        }
+                    },
+                    transporter: {
+                        label: "Transporter",
+                        cv: 0.278,
+                        fields: ["VSingle", "DH", "F"],
+                        equationLabel: "74,9 × [1,5585 − V/1,417] × [1,1172 − ln(DH)/6,332] × [0,5149 − ln(F)/7,958 − (ln(F))²/131,1]",
+                        limits: "V : 0,78–1,10 m recommandé • DH : 2,1–10 m • F ≤ 10 mvt/min",
+                        compute: ({ VSingle, DH, F }) => {
+                            const logDH = Math.log(DH);
+                            const logF = Math.log(F);
+                            return 74.9 *
+                                (1.5585 - VSingle / 1.417) *
+                                (1.1172 - logDH / 6.332) *
+                                (0.5149 - logF / 7.958 - (logF ** 2) / 131.1);
+                        }
+                    }
+                }
+            }
+        };
+
+        const movementGroups = [
+            { label: "Manutentions verticales", keys: ["lever", "baisser"] },
+            { label: "Pousser / Tirer – force initiale", keys: ["pousser_initiale", "tirer_initiale"] },
+            { label: "Pousser / Tirer – force soutenue", keys: ["pousser_soutenue", "tirer_soutenue"] },
+            { label: "Transporter", keys: ["transporter"] }
+        ];
+
+        const genderSelect = document.getElementById("gender");
+        const movementSelect = document.getElementById("movement");
+        const percentileInput = document.getElementById("percentile");
+        const cvDisplay = document.getElementById("cv-display");
+        const equationLabel = document.getElementById("equation-label");
+        const inputFieldsContainer = document.getElementById("input-fields");
+        const derivedValues = document.getElementById("derived-values");
+        const limitsText = document.getElementById("limits-text");
+        const messages = document.getElementById("messages");
+
+        const results = {
+            base: document.getElementById("mal-base"),
+            corrected: document.getElementById("mal-corrected"),
+            percentile: document.getElementById("mal-percentile"),
+            factorProduct: document.getElementById("factor-product")
+        };
+
+        const factors = {
+            durationToggle: document.getElementById("duration-toggle"),
+            durationHours: document.getElementById("duration-hours"),
+            durationFactor: document.getElementById("duration-factor"),
+            gripToggle: document.getElementById("grip-toggle"),
+            torsionToggle: document.getElementById("torsion-toggle"),
+            torsionAngle: document.getElementById("torsion-angle"),
+            torsionFactor: document.getElementById("torsion-factor"),
+            guidageToggle: document.getElementById("guidage-toggle"),
+            instabilityToggle: document.getElementById("instability-toggle"),
+            customToggle: document.getElementById("custom-toggle"),
+            customFactor: document.getElementById("custom-factor")
+        };
+
+        const inputElements = {};
+
+        function populateMovementOptions() {
+            const genderKey = genderSelect.value;
+            const movementData = dataset[genderKey].movements;
+            const previousSelection = movementSelect.value;
+            movementSelect.innerHTML = "";
+            let firstAvailable = "";
+
+            movementGroups.forEach((group) => {
+                const availableKeys = group.keys.filter((key) => movementData[key]);
+                if (!availableKeys.length) {
+                    return;
+                }
+                const optgroup = document.createElement("optgroup");
+                optgroup.label = group.label;
+                availableKeys.forEach((key) => {
+                    const option = document.createElement("option");
+                    option.value = key;
+                    option.textContent = movementData[key].label;
+                    optgroup.appendChild(option);
+                    if (!firstAvailable) {
+                        firstAvailable = key;
+                    }
+                });
+                movementSelect.appendChild(optgroup);
+            });
+
+            if (previousSelection && movementData[previousSelection]) {
+                movementSelect.value = previousSelection;
+            } else if (firstAvailable) {
+                movementSelect.value = firstAvailable;
+            }
+        }
+
+        function buildFields() {
+            const genderKey = genderSelect.value;
+            const movementKey = movementSelect.value;
+            const movement = dataset[genderKey].movements[movementKey];
+            inputFieldsContainer.innerHTML = "";
+            derivedValues.textContent = "";
+            limitsText.textContent = movement.limits || "";
+
+            Object.keys(inputElements).forEach((key) => delete inputElements[key]);
+
+            movement.fields.forEach((fieldKey) => {
+                const template = parameterTemplates[fieldKey];
+                if (!template) return;
+                const wrapper = document.createElement("label");
+                wrapper.dataset.field = fieldKey;
+                const input = document.createElement("input");
+                input.type = "number";
+                input.step = template.step;
+                if (template.min !== undefined) input.min = template.min;
+                if (template.max !== undefined) input.max = template.max;
+                input.value = template.default;
+                input.id = `field-${fieldKey}`;
+                wrapper.textContent = template.label;
+                wrapper.appendChild(input);
+                inputFieldsContainer.appendChild(wrapper);
+                inputElements[fieldKey] = input;
+                input.addEventListener("input", updateAll);
+            });
+        }
+
+        function getFieldValues() {
+            const genderKey = genderSelect.value;
+            const movementKey = movementSelect.value;
+            const movement = dataset[genderKey].movements[movementKey];
+            const values = {};
+            for (const fieldKey of movement.fields) {
+                const el = inputElements[fieldKey];
+                values[fieldKey] = parseFloat(el?.value ?? "NaN");
+            }
+            return values;
+        }
+
+        function formatNumber(value, options = {}) {
+            if (!isFinite(value)) return "—";
+            const { digits } = options;
+            if (typeof digits === "number") {
+                return value.toLocaleString("fr-CA", {
+                    minimumFractionDigits: digits,
+                    maximumFractionDigits: digits
+                });
+            }
+            return value.toLocaleString("fr-CA", {
+                maximumFractionDigits: 10
+            });
+        }
+
+        function durationCorrection(hours, genderKey) {
+            if (!isFinite(hours)) return 1;
+            const factor = genderKey === "female"
+                ? (100.81 - 1.94 * hours) / 100
+                : (101.42 - 3.40 * hours) / 100;
+            return Math.max(factor, 0);
+        }
+
+        function torsionCorrection(angle) {
+            if (!isFinite(angle)) return 1;
+            return Math.max(1 - 0.0032 * angle, 0);
+        }
+
+        function totalFactor(genderKey) {
+            let product = 1;
+
+            if (factors.durationToggle.checked) {
+                const hours = parseFloat(factors.durationHours.value);
+                const factor = durationCorrection(hours, genderKey);
+                factors.durationFactor.textContent = formatNumber(factor, { digits: 6 });
+                product *= factor;
+            } else {
+                factors.durationFactor.textContent = formatNumber(1, { digits: 6 });
+            }
+
+            if (factors.gripToggle.checked) {
+                product *= 0.84;
+            }
+
+            if (factors.torsionToggle.checked) {
+                const angle = parseFloat(factors.torsionAngle.value);
+                const factor = torsionCorrection(angle);
+                factors.torsionFactor.textContent = formatNumber(factor, { digits: 6 });
+                product *= factor;
+            } else {
+                factors.torsionFactor.textContent = formatNumber(1, { digits: 6 });
+            }
+
+            if (factors.guidageToggle.checked) {
+                product *= 0.90;
+            }
+
+            if (factors.instabilityToggle.checked) {
+                product *= 0.69;
+            }
+
+            if (factors.customToggle.checked) {
+                const custom = parseFloat(factors.customFactor.value);
+                if (isFinite(custom)) {
+                    product *= custom;
+                }
+            }
+
+            return product;
+        }
+
+        function normalQuantile(p) {
+            if (!(p > 0 && p < 1)) return NaN;
+            const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
+            const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+            const c = [-7.784894002430293e-03, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+            const d = [7.784695709041462e-03, 0.3224671290700398, 2.445134137142996, 3.7544086619074166];
+            const plow = 0.02425;
+            const phigh = 1 - plow;
+            let q, r;
+            if (p < plow) {
+                q = Math.sqrt(-2 * Math.log(p));
+                return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+                    ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+            }
+            if (p > phigh) {
+                q = Math.sqrt(-2 * Math.log(1 - p));
+                return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+                    ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+            }
+            q = p - 0.5;
+            r = q * q;
+            return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+                (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+        }
+
+        function computePercentile(mean, cv, percentile) {
+            const p = percentile / 100;
+            if (!isFinite(mean) || !isFinite(cv) || !(p > 0 && p < 1)) return NaN;
+            const z = normalQuantile(p);
+            return mean * (1 + z * cv);
+        }
+
+        function updateAll() {
+            const genderKey = genderSelect.value;
+            const movementKey = movementSelect.value;
+            const movement = dataset[genderKey].movements[movementKey];
+            if (!movement) {
+                return;
+            }
+
+            cvDisplay.textContent = formatNumber(movement.cv, { digits: 3 });
+            equationLabel.textContent = movement.equationLabel;
+
+            const values = getFieldValues();
+            const derived = movement.derive ? movement.derive(values) : {};
+            const messagesList = [];
+
+            if (movement.fields.includes("F") && values.F <= 0) {
+                messagesList.push("La fréquence doit être supérieure à 0.");
+            }
+            if (movement.fields.includes("DH") && values.DH <= 0) {
+                messagesList.push("La distance horizontale doit être positive.");
+            }
+            if (movement.fields.includes("VTop") && movement.fields.includes("VBottom") && values.VTop <= values.VBottom) {
+                messagesList.push("V haut devrait être supérieur à V bas pour un déplacement positif.");
+            }
+
+            const derivedStrings = [];
+            if (derived.VRM !== undefined) {
+                derivedStrings.push(`VRM : ${formatNumber(derived.VRM)} m`);
+            }
+            if (derived.DV !== undefined) {
+                derivedStrings.push(`DV : ${formatNumber(derived.DV)} m`);
+            }
+            derivedValues.textContent = derivedStrings.join(" • ");
+
+            let baseMAL = NaN;
+            try {
+                baseMAL = movement.compute({ ...values, ...derived });
+            } catch (error) {
+                messagesList.push("Erreur de calcul : vérifier les valeurs.");
+            }
+
+            if (!isFinite(baseMAL)) {
+                results.base.textContent = "—";
+                results.corrected.textContent = "—";
+                results.percentile.textContent = "—";
+                results.factorProduct.textContent = "—";
+                messages.innerHTML = messagesList.map(msg => `<div class="error">${msg}</div>`).join("") || "";
+                return;
+            }
+
+            if (baseMAL <= 0) {
+                messagesList.push("Le MAL calculé est négatif ou nul : vérifier les paramètres et les limites d'application.");
+            }
+
+            const correctionFactor = totalFactor(genderKey);
+            results.factorProduct.textContent = formatNumber(correctionFactor, { digits: 6 });
+
+            const corrected = baseMAL * correctionFactor;
+            const percentileValue = computePercentile(corrected, movement.cv, parseFloat(percentileInput.value));
+
+            results.base.textContent = `${formatNumber(baseMAL)} kg`;
+            results.corrected.textContent = `${formatNumber(corrected)} kg`;
+            results.percentile.textContent = isFinite(percentileValue) ? `${formatNumber(percentileValue)} kg` : "—";
+
+            messages.innerHTML = messagesList.map(msg => `<div class="error">${msg}</div>`).join("") || "";
+        }
+
+        genderSelect.addEventListener("change", () => {
+            populateMovementOptions();
+            buildFields();
+            updateAll();
+        });
+
+        movementSelect.addEventListener("change", () => {
+            buildFields();
+            updateAll();
+        });
+
+        percentileInput.addEventListener("input", updateAll);
+
+        Object.values(factors).forEach((element) => {
+            if (element instanceof HTMLElement) {
+                element.addEventListener("input", updateAll);
+                element.addEventListener("change", updateAll);
+            }
+        });
+
+        populateMovementOptions();
+        buildFields();
+        updateAll();
+    </script>
+</body>
+</html>
