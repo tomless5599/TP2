@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculatrice LM-MMH (MAL)</title>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top, #243b55, #141e30 55%);
+            color: #f1f5ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            color: #e0ecff;
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: #a9bbd9;
+            margin-bottom: 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            background: rgba(12, 22, 37, 0.82);
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 30px 70px rgba(5, 10, 20, 0.6);
+            border: 1px solid rgba(91, 140, 207, 0.25);
+            backdrop-filter: blur(9px);
+        }
+
+        .grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        @media (min-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .panel {
+            background: rgba(21, 36, 57, 0.82);
+            border-radius: 15px;
+            padding: 22px;
+            border: 1px solid rgba(92, 138, 205, 0.35);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+
+        .panel h2 {
+            font-size: 1.25rem;
+            margin: 0 0 1rem 0;
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.95rem;
+            color: #c8d8f4;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(126, 172, 235, 0.35);
+            background: rgba(11, 20, 32, 0.7);
+            color: #f1f5ff;
+            font-size: 0.95rem;
+            transition: border 0.25s ease, background 0.25s ease;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: "Fira Code", "Consolas", monospace;
+            line-height: 1.4;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #7fb0ff;
+            background: rgba(15, 30, 47, 0.75);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(39, 66, 104, 0.7);
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(120, 164, 226, 0.35);
+            font-size: 0.9rem;
+            color: #d3e6ff;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #4c8dff, #2755d6);
+            color: #fff;
+            box-shadow: 0 12px 25px rgba(36, 90, 196, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(36, 90, 196, 0.45);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #54617c, #2f3646);
+            box-shadow: 0 12px 25px rgba(26, 34, 48, 0.45);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f99500, #e05e00);
+            box-shadow: 0 12px 30px rgba(233, 142, 23, 0.45);
+        }
+
+        .results {
+            display: grid;
+            gap: 16px;
+        }
+
+        .result-card {
+            background: rgba(18, 30, 48, 0.82);
+            border-radius: 14px;
+            padding: 16px 18px;
+            border: 1px solid rgba(95, 140, 204, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .result-card strong {
+            font-size: 1.8rem;
+            color: #8ec5ff;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #9fbcff;
+        }
+
+        details {
+            background: rgba(19, 32, 53, 0.75);
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid rgba(92, 138, 205, 0.25);
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #c8dcff;
+            list-style: none;
+        }
+
+        details summary::marker,
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .danger {
+            color: #ffb4b4;
+        }
+
+        .muted {
+            color: #a6b5cc;
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid rgba(95, 140, 204, 0.35);
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(51, 80, 120, 0.75);
+            color: #f1f5ff;
+        }
+
+        .factor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .factor-item {
+            background: rgba(17, 28, 46, 0.75);
+            border: 1px solid rgba(84, 126, 191, 0.28);
+            border-radius: 12px;
+            padding: 14px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .factor-item header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .factor-item header h4 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .switch input {
+            width: auto;
+            height: auto;
+        }
+
+        .small-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .list-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        footer {
+            text-align: center;
+            color: #9aadc8;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculatrice LM-MMH (MAL)</h1>
+        <p class="subtitle">Évaluer la charge maximale acceptable (MAL) à partir des équations LM-MMH, appliquer des facteurs de correction et estimer les centiles cibles à l'aide du coefficient de variation.</p>
+
+        <div class="panel" style="margin-bottom: 24px;">
+            <h2>1. Sélection &amp; paramètres</h2>
+            <div class="grid grid-2">
+                <div class="panel" style="background: rgba(13,23,38,0.75); border: 1px solid rgba(97,150,217,0.25);">
+                    <h3>Choix du scénario</h3>
+                    <div class="row" style="margin-bottom: 14px;">
+                        <label>
+                            Sexe
+                            <select id="gender-select"></select>
+                        </label>
+                        <label>
+                            Mouvement
+                            <select id="movement-select"></select>
+                        </label>
+                    </div>
+                    <div class="row" style="margin-bottom: 14px;">
+                        <label>
+                            Équation utilisée
+                            <select id="equation-select"></select>
+                        </label>
+                        <label>
+                            Centile visé (%)
+                            <input type="number" id="percentile-input" value="10" min="0" max="100" step="1">
+                        </label>
+                    </div>
+                    <div class="chip">CV courant : <span id="cv-display">—</span></div>
+                    <p class="muted" style="margin-top: 12px;">Ajustez le centile cible pour dimensionner la tâche (ex. 10 % ≈ protéger 90 % du personnel). Les coefficients des équations peuvent être édités plus bas.</p>
+                </div>
+                <div class="panel" style="background: rgba(13,23,38,0.75); border: 1px solid rgba(97,150,217,0.25);">
+                    <h3>Variables anthropométriques / opérationnelles</h3>
+                    <div class="row">
+                        <label>H (distance horizontale, cm)
+                            <input type="number" id="param-H" value="35" step="0.1">
+                        </label>
+                        <label>V (hauteur verticale, cm)
+                            <input type="number" id="param-V" value="75" step="0.1">
+                        </label>
+                        <label>D (déplacement vertical, cm)
+                            <input type="number" id="param-D" value="25" step="0.1">
+                        </label>
+                        <label>R (rotation, rad ou équiv.)
+                            <input type="number" id="param-R" value="0" step="0.01">
+                        </label>
+                        <label>F (fréquence, coups/min)
+                            <input type="number" id="param-F" value="6" step="0.1">
+                        </label>
+                        <label>VRM (vertical range midpoint, m)
+                            <input type="number" id="param-VRM" value="0.9" step="0.01">
+                        </label>
+                        <label>DV × F
+                            <input type="number" id="param-DVF" value="0" step="0.01">
+                        </label>
+                        <label>DH × F
+                            <input type="number" id="param-DHF" value="0" step="0.01">
+                        </label>
+                    </div>
+                    <div class="muted">Astuce : ajustez les paramètres selon le <em>Tableau 1</em>. Les champs inutilisés par l'équation peuvent rester à 0.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 24px;">
+            <h2>2. Facteurs de correction</h2>
+            <div class="factor-list">
+                <div class="factor-item">
+                    <header>
+                        <h4>Durée du travail</h4>
+                        <div class="switch"><input type="checkbox" id="duration-toggle" checked> Actif</div>
+                    </header>
+                    <div class="small-inputs">
+                        <label>Durée (h)
+                            <select id="duration-select">
+                                <option value="1">1 h (facteur 1.00)</option>
+                                <option value="2">2 h (facteur 0.95)</option>
+                                <option value="4">4 h (facteur 0.88)</option>
+                                <option value="8" selected>8 h (facteur 0.84)</option>
+                                <option value="custom">Autre</option>
+                            </select>
+                        </label>
+                        <label>Facteur personnalisé
+                            <input type="number" id="duration-custom" value="0.84" step="0.01" min="0" max="1" disabled>
+                        </label>
+                    </div>
+                    <p class="muted">Basé sur Snook (1995) pour des tâches de levage prolongées. Ajustez selon votre réalité.</p>
+                </div>
+
+                <div class="factor-item">
+                    <header>
+                        <h4>Qualité de la prise</h4>
+                        <div class="switch"><input type="checkbox" id="grip-toggle" checked> Actif</div>
+                    </header>
+                    <div class="small-inputs">
+                        <label>Couplage main-objet
+                            <select id="grip-select">
+                                <option value="1">Bonne (1.00)</option>
+                                <option value="0.84" selected>Acceptable / Mauvaise (0.84)</option>
+                            </select>
+                        </label>
+                        <label>Facteur personnalisé
+                            <input type="number" id="grip-custom" value="0.84" step="0.01" min="0" max="1">
+                        </label>
+                    </div>
+                    <p class="muted">Potvin et al. (2021) suggèrent une réduction de 16&nbsp;% lorsque la préhension est moins qu'optimale.</p>
+                </div>
+
+                <div class="factor-item">
+                    <header>
+                        <h4>Torsion du tronc</h4>
+                        <div class="switch"><input type="checkbox" id="torsion-toggle"> Actif</div>
+                    </header>
+                    <div class="small-inputs">
+                        <label>Angle de torsion (°)
+                            <input type="number" id="torsion-angle" value="15" step="1" min="0" max="90">
+                        </label>
+                        <div class="chip">Facteur calculé : <span id="torsion-factor">1.00</span></div>
+                    </div>
+                    <p class="muted">Approche NIOSH : facteur ≈ 1 − 0,0032 × angle. Validez selon votre protocole.</p>
+                </div>
+
+                <div class="factor-item">
+                    <header>
+                        <h4>Guidage horizontal</h4>
+                        <div class="switch"><input type="checkbox" id="guidage-toggle"> Actif</div>
+                    </header>
+                    <div class="small-inputs">
+                        <label>Facteur appliqué
+                            <input type="number" id="guidage-factor" value="1.00" step="0.01" min="0">
+                        </label>
+                        <label>Description
+                            <input type="text" id="guidage-description" placeholder="Ex. rail, convoyeur...">
+                        </label>
+                    </div>
+                    <p class="muted">Ajustez selon vos données (augmentation ou diminution des efforts exigés).</p>
+                </div>
+
+                <div class="factor-item">
+                    <header>
+                        <h4>Facteurs personnalisés</h4>
+                        <button class="btn btn-secondary" id="add-factor">Ajouter un facteur</button>
+                    </header>
+                    <div id="custom-factors"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 24px;">
+            <h2>3. Résultats</h2>
+            <div class="results">
+                <div class="result-card">
+                    <span class="tag">MAL (50e centile, sans correction)</span>
+                    <strong id="mal-base">— kg</strong>
+                    <span class="muted" id="equation-used">—</span>
+                </div>
+                <div class="result-card">
+                    <span class="tag">MAL corrigé (facteurs activés)</span>
+                    <strong id="mal-corrected">— kg</strong>
+                    <span class="muted" id="factor-summary">—</span>
+                </div>
+                <div class="result-card">
+                    <span class="tag">MAL pour centile visé</span>
+                    <strong id="mal-percentile">— kg</strong>
+                    <span class="muted">Hypothèse : distribution normale avec CV constant.</span>
+                </div>
+                <div class="result-card">
+                    <span class="tag">Population couverte par la charge corrigée</span>
+                    <strong id="population-covered">— %</strong>
+                    <span class="muted">Centile estimé correspondant à la charge corrigée.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 24px;">
+            <h2>4. Gestion des équations</h2>
+            <p class="muted">Importez les coefficients depuis vos tableaux LM-MMH (voir images fournies). Les valeurs par défaut sont indicatives pour le mouvement « Soulever » (femmes) et servent d'exemple.</p>
+            <details>
+                <summary>Éditer le jeu de coefficients (JSON)</summary>
+                <p class="muted" style="margin-top: 12px;">Structure attendue :</p>
+                <pre class="muted" style="background: rgba(12,22,36,0.85); padding: 12px; border-radius: 12px; overflow-x: auto;">
+{
+  "female": {
+    "movements": {
+      "soulever": {
+        "label": "Soulever",
+        "cv": 0.31,
+        "equations": [
+          {
+            "name": "Équation (1)",
+            "range": [3, 22.7],
+            "intercept": 22.72,
+            "coefficients": {"H": 0.079, "V": -0.12, "D": 0.043, "R": -0.35, "F": 0.52, "VRM": -2.37, "DVF": -0.015, "DHF": -0.08}
+          },
+          {
+            "name": "Équation (2)",
+            "range": [22.7, 44],
+            "intercept": 12.70,
+            "coefficients": {"H": 0.056, "V": -0.08, "D": 0.039, "R": -0.29, "F": 0.52, "VRM": -1.94, "DVF": -0.013, "DHF": -0.07}
+          }
+        ]
+      }
+    }
+  },
+  "male": { "movements": {}}
+}
+</pre>
+                <div class="grid grid-2">
+                    <div>
+                        <h3>JSON actuel</h3>
+                        <textarea id="json-editor"></textarea>
+                        <div class="list-inline" style="margin-top: 12px;">
+                            <button class="btn" id="apply-json">Appliquer</button>
+                            <button class="btn btn-secondary" id="reset-json">Réinitialiser</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Messages</h3>
+                        <div id="json-status" class="muted">Aucun changement pour le moment.</div>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <footer>Version d'étude – adaptez les coefficients selon vos tableaux LM-MMH. Calculs en kilogrammes.</footer>
+    </div>
+
+    <script>
+        const clone = obj => (typeof structuredClone === "function" ? structuredClone(obj) : JSON.parse(JSON.stringify(obj)));
+
+        const defaultDataset = {
+            female: {
+                label: "Femmes",
+                movements: {
+                    soulever: {
+                        label: "Soulever",
+                        cv: 0.31,
+                        notes: "Valeurs d'exemple basées sur le Tableau 2 (à valider).",
+                        equations: [
+                            {
+                                name: "Équation (1)",
+                                range: [3, 22.7],
+                                intercept: 22.72,
+                                coefficients: { H: 0.079, V: -0.12, D: 0.043, R: -0.35, F: 0.52, VRM: -2.37, DVF: -0.015, DHF: -0.08 }
+                            },
+                            {
+                                name: "Équation (2)",
+                                range: [22.7, 44],
+                                intercept: 12.70,
+                                coefficients: { H: 0.056, V: -0.08, D: 0.039, R: -0.29, F: 0.52, VRM: -1.94, DVF: -0.013, DHF: -0.07 }
+                            }
+                        ]
+                    },
+                    abaisser: {
+                        label: "Abaisser",
+                        cv: 0.31,
+                        notes: "Complétez avec vos coefficients.",
+                        equations: [
+                            {
+                                name: "Équation (1)",
+                                range: [0, 0],
+                                intercept: 0,
+                                coefficients: { H: 0, V: 0, D: 0, R: 0, F: 0, VRM: 0, DVF: 0, DHF: 0 }
+                            },
+                            {
+                                name: "Équation (2)",
+                                range: [0, 0],
+                                intercept: 0,
+                                coefficients: { H: 0, V: 0, D: 0, R: 0, F: 0, VRM: 0, DVF: 0, DHF: 0 }
+                            }
+                        ]
+                    },
+                    pousser: {
+                        label: "Pousser",
+                        cv: 0.20,
+                        notes: "Saisir les équations (force initiale / soutenue).",
+                        equations: [
+                            {
+                                name: "Initiale",
+                                range: [0, 0],
+                                intercept: 0,
+                                coefficients: { H: 0, V: 0, D: 0, R: 0, F: 0, VRM: 0, DVF: 0, DHF: 0 }
+                            },
+                            {
+                                name: "Soutenue",
+                                range: [0, 0],
+                                intercept: 0,
+                                coefficients: { H: 0, V: 0, D: 0, R: 0, F: 0, VRM: 0, DVF: 0, DHF: 0 }
+                            }
+                        ]
+                    }
+                }
+            },
+            male: {
+                label: "Hommes",
+                movements: {
+                    soulever: {
+                        label: "Soulever",
+                        cv: 0.27,
+                        notes: "Remplir les coefficients du Tableau 3.",
+                        equations: [
+                            {
+                                name: "Équation (1)",
+                                range: [0, 0],
+                                intercept: 0,
+                                coefficients: { H: 0, V: 0, D: 0, R: 0, F: 0, VRM: 0, DVF: 0, DHF: 0 }
+                            },
+                            {
+                                name: "Équation (2)",
+                                range: [0, 0],
+                                intercept: 0,
+                                coefficients: { H: 0, V: 0, D: 0, R: 0, F: 0, VRM: 0, DVF: 0, DHF: 0 }
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        let dataset = clone(defaultDataset);
+
+        const genderSelect = document.getElementById("gender-select");
+        const movementSelect = document.getElementById("movement-select");
+        const equationSelect = document.getElementById("equation-select");
+        const cvDisplay = document.getElementById("cv-display");
+
+        const inputs = {
+            H: document.getElementById("param-H"),
+            V: document.getElementById("param-V"),
+            D: document.getElementById("param-D"),
+            R: document.getElementById("param-R"),
+            F: document.getElementById("param-F"),
+            VRM: document.getElementById("param-VRM"),
+            DVF: document.getElementById("param-DVF"),
+            DHF: document.getElementById("param-DHF")
+        };
+
+        const percentileInput = document.getElementById("percentile-input");
+
+        const outputs = {
+            base: document.getElementById("mal-base"),
+            corrected: document.getElementById("mal-corrected"),
+            percentile: document.getElementById("mal-percentile"),
+            population: document.getElementById("population-covered"),
+            equationUsed: document.getElementById("equation-used"),
+            factorSummary: document.getElementById("factor-summary")
+        };
+
+        const jsonEditor = document.getElementById("json-editor");
+        const jsonStatus = document.getElementById("json-status");
+        document.getElementById("reset-json").addEventListener("click", () => {
+            dataset = clone(defaultDataset);
+            populateSelectors();
+            jsonEditor.value = JSON.stringify(dataset, null, 2);
+            jsonStatus.textContent = "Réinitialisé avec les valeurs par défaut.";
+            updateCalculations();
+        });
+
+        document.getElementById("apply-json").addEventListener("click", () => {
+            try {
+                const parsed = JSON.parse(jsonEditor.value);
+                if (!parsed || typeof parsed !== "object") throw new Error("Structure JSON invalide.");
+                dataset = parsed;
+                populateSelectors();
+                jsonStatus.textContent = "Nouveau jeu de coefficients appliqué.";
+                updateCalculations();
+            } catch (error) {
+                jsonStatus.innerHTML = `<span class="danger">Erreur : ${error.message}</span>`;
+            }
+        });
+
+        jsonEditor.value = JSON.stringify(dataset, null, 2);
+
+        function populateSelectors() {
+            genderSelect.innerHTML = "";
+            Object.entries(dataset).forEach(([key, info]) => {
+                if (!info.movements) return;
+                const option = document.createElement("option");
+                option.value = key;
+                option.textContent = info.label || key;
+                genderSelect.appendChild(option);
+            });
+            populateMovements();
+        }
+
+        function populateMovements() {
+            const genderKey = genderSelect.value;
+            const genderData = dataset[genderKey];
+            movementSelect.innerHTML = "";
+            if (!genderData || !genderData.movements) {
+                movementSelect.appendChild(new Option("—", ""));
+                equationSelect.innerHTML = "";
+                return;
+            }
+            Object.entries(genderData.movements).forEach(([key, info]) => {
+                const option = document.createElement("option");
+                option.value = key;
+                option.textContent = info.label || key;
+                movementSelect.appendChild(option);
+            });
+            populateEquations();
+        }
+
+        function populateEquations() {
+            const genderKey = genderSelect.value;
+            const movementKey = movementSelect.value;
+            const movement = dataset?.[genderKey]?.movements?.[movementKey];
+            equationSelect.innerHTML = "";
+            if (!movement) {
+                equationSelect.appendChild(new Option("—", ""));
+                cvDisplay.textContent = "—";
+                return;
+            }
+            movement.equations?.forEach((eq, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                const rangeText = eq.range?.[0] || eq.range?.[1] ? ` (valide ${eq.range[0]}–${eq.range[1]} kg)` : "";
+                option.textContent = `${eq.name || `Équation ${index + 1}`}${rangeText}`;
+                equationSelect.appendChild(option);
+            });
+            cvDisplay.textContent = typeof movement.cv === "number" ? movement.cv.toFixed(2) : "—";
+        }
+
+        genderSelect.addEventListener("change", () => {
+            populateMovements();
+            updateCalculations();
+        });
+        movementSelect.addEventListener("change", () => {
+            populateEquations();
+            updateCalculations();
+        });
+        equationSelect.addEventListener("change", updateCalculations);
+        percentileInput.addEventListener("input", updateCalculations);
+        Object.values(inputs).forEach(input => input.addEventListener("input", updateCalculations));
+
+        // Correction factors logic
+        const durationToggle = document.getElementById("duration-toggle");
+        const durationSelect = document.getElementById("duration-select");
+        const durationCustom = document.getElementById("duration-custom");
+        const gripToggle = document.getElementById("grip-toggle");
+        const gripSelect = document.getElementById("grip-select");
+        const gripCustom = document.getElementById("grip-custom");
+        const torsionToggle = document.getElementById("torsion-toggle");
+        const torsionAngle = document.getElementById("torsion-angle");
+        const torsionFactorDisplay = document.getElementById("torsion-factor");
+        const guidageToggle = document.getElementById("guidage-toggle");
+        const guidageFactor = document.getElementById("guidage-factor");
+        const guidageDescription = document.getElementById("guidage-description");
+        const customFactorsContainer = document.getElementById("custom-factors");
+
+        durationSelect.addEventListener("change", () => {
+            durationCustom.disabled = durationSelect.value !== "custom";
+            updateCalculations();
+        });
+        durationCustom.addEventListener("input", updateCalculations);
+        [durationToggle, gripToggle, torsionToggle, guidageToggle].forEach(el => el.addEventListener("change", updateCalculations));
+        gripSelect.addEventListener("change", () => {
+            gripCustom.value = gripSelect.value;
+            updateCalculations();
+        });
+        gripCustom.addEventListener("input", updateCalculations);
+        torsionAngle.addEventListener("input", updateCalculations);
+        guidageFactor.addEventListener("input", updateCalculations);
+        guidageDescription.addEventListener("input", updateCalculations);
+
+        document.getElementById("add-factor").addEventListener("click", () => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "factor-item";
+            wrapper.innerHTML = `
+                <header>
+                    <h4>Facteur personnalisé</h4>
+                    <button type="button" class="btn btn-warning btn-remove">Retirer</button>
+                </header>
+                <div class="small-inputs">
+                    <label>Nom
+                        <input type="text" class="custom-name" placeholder="Ex. Chaleur">
+                    </label>
+                    <label>Facteur multiplicatif
+                        <input type="number" class="custom-factor" value="1" step="0.01" min="0">
+                    </label>
+                </div>
+            `;
+            customFactorsContainer.appendChild(wrapper);
+            wrapper.querySelector(".btn-remove").addEventListener("click", () => {
+                wrapper.remove();
+                updateCalculations();
+            });
+            wrapper.querySelectorAll("input").forEach(input => input.addEventListener("input", updateCalculations));
+        });
+
+        function getDurationFactor() {
+            if (!durationToggle.checked) return { value: 1, detail: "Durée ignorée" };
+            const map = { "1": 1, "2": 0.95, "4": 0.88, "8": 0.84 };
+            let value = map[durationSelect.value];
+            if (durationSelect.value === "custom") {
+                value = parseFloat(durationCustom.value) || 1;
+            }
+            return { value, detail: `${durationSelect.value === "custom" ? "Durée personnalisée" : `${durationSelect.value} h`} → ×${value.toFixed(2)}` };
+        }
+
+        function getGripFactor() {
+            if (!gripToggle.checked) return { value: 1, detail: "Prise ignorée" };
+            const value = parseFloat(gripCustom.value) || parseFloat(gripSelect.value) || 1;
+            return { value, detail: `Couplage ${gripSelect.selectedOptions[0]?.textContent || ""} → ×${value.toFixed(2)}` };
+        }
+
+        function getTorsionFactor() {
+            if (!torsionToggle.checked) {
+                torsionFactorDisplay.textContent = "1.00";
+                return { value: 1, detail: "Torsion ignorée" };
+            }
+            const angle = parseFloat(torsionAngle.value) || 0;
+            const value = Math.max(0, 1 - 0.0032 * angle);
+            torsionFactorDisplay.textContent = value.toFixed(3);
+            return { value, detail: `Torsion ${angle.toFixed(0)}° → ×${value.toFixed(3)}` };
+        }
+
+        function getGuidageFactor() {
+            if (!guidageToggle.checked) return { value: 1, detail: "Guidage ignoré" };
+            const value = parseFloat(guidageFactor.value) || 1;
+            const desc = guidageDescription.value?.trim();
+            return { value, detail: `Guidage${desc ? ` (${desc})` : ""} → ×${value.toFixed(2)}` };
+        }
+
+        function getCustomFactors() {
+            const factors = [];
+            customFactorsContainer.querySelectorAll(".factor-item").forEach(item => {
+                const name = item.querySelector(".custom-name")?.value?.trim() || "Facteur";
+                const value = parseFloat(item.querySelector(".custom-factor")?.value) || 1;
+                factors.push({ value, detail: `${name} → ×${value.toFixed(2)}` });
+            });
+            return factors;
+        }
+
+        function collectFactors() {
+            const factors = [getDurationFactor(), getGripFactor(), getTorsionFactor(), getGuidageFactor(), ...getCustomFactors()];
+            const active = factors.filter(f => f.value !== 1);
+            const product = factors.reduce((acc, f) => acc * (f.value || 1), 1);
+            return { product, factors, active };
+        }
+
+        function normalQuantile(p) {
+            const a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
+            const a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
+            const b1 = -54.4760987982241, b2 = 161.585836858041, b3 = -155.698979859887;
+            const b4 = 66.8013118877197, b5 = -13.2806815528857;
+            const c1 = -0.00778489400243029, c2 = -0.322396458041136, c3 = -2.40075827716184;
+            const c4 = -2.54973253934373, c5 = 4.37466414146497, c6 = 2.93816398269878;
+            const d1 = 0.00778469570904146, d2 = 0.32246712907004, d3 = 2.445134137143;
+            const d4 = 3.75440866190742;
+            const plow = 0.02425;
+            const phigh = 1 - plow;
+            if (p <= 0 || p >= 1) return NaN;
+            if (p < plow) {
+                const q = Math.sqrt(-2 * Math.log(p));
+                return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+                    ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+            }
+            if (p > phigh) {
+                const q = Math.sqrt(-2 * Math.log(1 - p));
+                return -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+                    ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+            }
+            const q = p - 0.5;
+            const r = q * q;
+            return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
+                (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+        }
+
+        function computeEquation(eq, params) {
+            const coeffs = eq.coefficients || {};
+            let mal = eq.intercept || 0;
+            mal += (coeffs.H || 0) * params.H;
+            mal += (coeffs.V || 0) * params.V;
+            mal += (coeffs.D || 0) * params.D;
+            mal += (coeffs.R || 0) * params.R;
+            mal += (coeffs.F || 0) * params.F;
+            mal += (coeffs.VRM || 0) * params.VRM;
+            mal += (coeffs.DVF || 0) * params.DVF;
+            mal += (coeffs.DHF || 0) * params.DHF;
+            return mal;
+        }
+
+        function updateCalculations() {
+            const genderKey = genderSelect.value;
+            const movementKey = movementSelect.value;
+            const eqIndex = parseInt(equationSelect.value, 10) || 0;
+            const movement = dataset?.[genderKey]?.movements?.[movementKey];
+
+            const params = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, parseFloat(input.value) || 0]));
+            if (!movement) {
+                outputs.base.textContent = "— kg";
+                outputs.corrected.textContent = "— kg";
+                outputs.percentile.textContent = "— kg";
+                outputs.population.textContent = "— %";
+                outputs.equationUsed.textContent = "Sélectionnez un mouvement.";
+                outputs.factorSummary.textContent = "";
+                return;
+            }
+
+            const eq = movement.equations?.[eqIndex];
+            let baseMal = computeEquation(eq || {}, params);
+            let note = eq ? `${eq.name || "Équation"} | Intercept ${eq.intercept}` : "Équation non définie.";
+            if (eq?.range && (eq.range[0] || eq.range[1])) {
+                note += ` | Plage ${eq.range[0]}–${eq.range[1]} kg`;
+            }
+            if (!Number.isFinite(baseMal)) {
+                outputs.base.innerHTML = `<span class="danger">Calcul impossible</span>`;
+                outputs.equationUsed.textContent = note;
+                return;
+            }
+
+            let warning = "";
+            if (eq?.range) {
+                const [min, max] = eq.range;
+                const underMin = typeof min === "number" && min !== 0 && baseMal < min - 1e-6;
+                const overMax = typeof max === "number" && max !== 0 && baseMal > max + 1e-6;
+                if (underMin || overMax) {
+                    warning = ` (⚠️ hors plage ${min}–${max} kg)`;
+                    const alternative = (movement.equations || []).find((candidate, index) => {
+                        if (index === eqIndex) return false;
+                        const malCandidate = computeEquation(candidate, params);
+                        const [altMin, altMax] = candidate.range || [];
+                        if (typeof altMin === "number" && altMin !== 0 && malCandidate < altMin - 1e-6) return false;
+                        if (typeof altMax === "number" && altMax !== 0 && malCandidate > altMax + 1e-6) return false;
+                        if (!Number.isFinite(malCandidate)) return false;
+                        baseMal = malCandidate;
+                        note = `${candidate.name || "Équation"} | Plage ${candidate.range?.join("–") || "non renseignée"} kg`;
+                        warning += ` – suggestion : ${candidate.name || `Éq. ${index + 1}`}`;
+                        return true;
+                    });
+                    if (!alternative) {
+                        warning += " – vérifiez les coefficients et la plage de validité.";
+                    }
+                }
+            }
+            outputs.equationUsed.textContent = note + warning;
+
+            outputs.base.textContent = `${baseMal.toFixed(2)} kg`;
+
+            const factorInfo = collectFactors();
+            const correctedMal = baseMal * factorInfo.product;
+            outputs.corrected.textContent = `${correctedMal.toFixed(2)} kg`;
+            outputs.factorSummary.textContent = factorInfo.active.length ?
+                factorInfo.active.map(f => f.detail).join(" | ") : "Aucun facteur actif";
+
+            const cv = typeof movement.cv === "number" ? movement.cv : null;
+            const percentileTarget = Math.max(0.1, Math.min(99.9, parseFloat(percentileInput.value))) / 100;
+            let malPercentile = NaN;
+            if (cv !== null && !Number.isNaN(baseMal)) {
+                const z = normalQuantile(percentileTarget);
+                const sd = baseMal * cv;
+                malPercentile = baseMal + z * sd;
+                outputs.percentile.textContent = `${malPercentile.toFixed(2)} kg`;
+
+                const zObserved = (correctedMal - baseMal) / (sd || 1e-9);
+                const percentileObserved = Math.round(100 * (0.5 * (1 + erf(zObserved / Math.SQRT2))));
+                outputs.population.textContent = `${Math.max(0, Math.min(100, percentileObserved)).toFixed(1)} %`;
+            } else {
+                outputs.percentile.textContent = "— kg";
+                outputs.population.textContent = "— %";
+            }
+        }
+
+        function erf(x) {
+            const sign = Math.sign(x);
+            x = Math.abs(x);
+            const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+            const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+            const t = 1 / (1 + p * x);
+            const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            return sign * y;
+        }
+
+        populateSelectors();
+        updateCalculations();
+    </script>
+</body>
+</html>
