@@ -308,7 +308,7 @@
             <h2>🔍 Search Items</h2>
             <div class="search-container">
                 <input type="text" id="itemSearch" placeholder="Search for items (e.g., Dragon bones, Rune platebody)...">
-                <button onclick="searchItems()">Search</button>
+                <button id="searchButton">Search</button>
             </div>
             <div id="itemList"></div>
         </div>
@@ -367,6 +367,13 @@
             return div.innerHTML;
         }
 
+        // Calculate average volume from historical data (excluding current)
+        function calculateAvgVolume(history) {
+            if (history.length < 2) return 0;
+            const previousHistory = history.slice(0, -1);
+            return previousHistory.reduce((sum, h) => sum + h.volume, 0) / previousHistory.length;
+        }
+
         // Search for items
         function searchItems() {
             const searchTerm = document.getElementById('itemSearch').value.toLowerCase();
@@ -387,11 +394,15 @@
                 return;
             }
 
-            itemList.innerHTML = results.map(item => 
-                `<div class="item-option" onclick="addToWatchlist(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}')">
-                    ${escapeHtml(item.name)}
-                </div>`
-            ).join('');
+            // Clear and rebuild item list with event listeners
+            itemList.innerHTML = '';
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-option';
+                div.textContent = item.name;
+                div.addEventListener('click', () => addToWatchlist(item.id, item.name));
+                itemList.appendChild(div);
+            });
             itemList.style.display = 'block';
         }
 
@@ -493,11 +504,7 @@
                     }
 
                     // Calculate average volume from historical data (excluding current)
-                    const previousHistory = item.history.slice(0, -1);
-                    const avgVolume = previousHistory.length > 0
-                        ? previousHistory.reduce((sum, h) => sum + h.volume, 0) / previousHistory.length
-                        : volume;
-
+                    const avgVolume = calculateAvgVolume(item.history) || volume;
                     const volumeMultiplier = avgVolume > 0 ? (volume / avgVolume).toFixed(2) : 'N/A';
 
                     // Detect bot dump using consistent volume comparison
@@ -554,11 +561,16 @@
                         ` : ''}
 
                         <div class="action-buttons">
-                            <button onclick="removeFromWatchlist(${itemId})">Remove from Watchlist</button>
+                            <button class="remove-btn" data-item-id="${itemId}">Remove from Watchlist</button>
                         </div>
 
                         <div class="last-updated">Last updated: ${new Date().toLocaleTimeString()}</div>
                     `;
+                    
+                    // Add event listener for remove button
+                    const removeBtn = itemCard.querySelector('.remove-btn');
+                    removeBtn.addEventListener('click', () => removeFromWatchlist(itemId));
+                    
                     watchlistDiv.appendChild(itemCard);
                 }
             } catch (error) {
@@ -575,14 +587,12 @@
             const significantDrop = priceChangePercent <= -5;
 
             // Check for volume spike (2x or more than average)
-            // Calculate average volume from all history except the current one
-            const previousHistory = history.slice(0, -1);
-            if (previousHistory.length === 0) return false;
+            const avgVolume = calculateAvgVolume(history);
+            if (avgVolume === 0) return false;
             
-            const avgVolume = previousHistory.reduce((sum, h) => sum + h.volume, 0) / previousHistory.length;
             const volumeSpike = currentVolume >= avgVolume * 2;
 
-            return significantDrop && volumeSpike && avgVolume > 0;
+            return significantDrop && volumeSpike;
         }
 
         // Format GP (gold pieces)
@@ -595,7 +605,10 @@
             return amount.toLocaleString();
         }
 
-        // Allow searching with Enter key
+        // Add event listener for search button
+        document.getElementById('searchButton').addEventListener('click', searchItems);
+
+        // Allow searching with Enter key and auto-search as typing
         document.getElementById('itemSearch').addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
                 searchItems();
