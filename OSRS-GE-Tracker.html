@@ -360,6 +360,13 @@
             }
         }
 
+        // HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Search for items
         function searchItems() {
             const searchTerm = document.getElementById('itemSearch').value.toLowerCase();
@@ -381,8 +388,8 @@
             }
 
             itemList.innerHTML = results.map(item => 
-                `<div class="item-option" onclick="addToWatchlist(${item.id}, '${item.name.replace(/'/g, "\\'")}')">
-                    ${item.name}
+                `<div class="item-option" onclick="addToWatchlist(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}')">
+                    ${escapeHtml(item.name)}
                 </div>`
             ).join('');
             itemList.style.display = 'block';
@@ -485,22 +492,23 @@
                         priceChangePercent = oldPrice > 0 ? ((priceChange / oldPrice) * 100) : 0;
                     }
 
-                    // Detect bot dump
-                    const isBotDump = detectBotDump(item.history, priceChangePercent, volume);
-
-                    // Calculate average volume
-                    const avgVolume = item.history.length > 1 
-                        ? item.history.reduce((sum, h) => sum + h.volume, 0) / item.history.length 
+                    // Calculate average volume from historical data (excluding current)
+                    const previousHistory = item.history.slice(0, -1);
+                    const avgVolume = previousHistory.length > 0
+                        ? previousHistory.reduce((sum, h) => sum + h.volume, 0) / previousHistory.length
                         : volume;
 
                     const volumeMultiplier = avgVolume > 0 ? (volume / avgVolume).toFixed(2) : 'N/A';
+
+                    // Detect bot dump using consistent volume comparison
+                    const isBotDump = detectBotDump(item.history, priceChangePercent, volume);
 
                     // Render item card
                     const itemCard = document.createElement('div');
                     itemCard.className = `watchlist-item ${isBotDump ? 'bot-dump' : ''}`;
                     itemCard.innerHTML = `
                         <div class="item-header">
-                            <div class="item-name">${item.name}</div>
+                            <div class="item-name">${escapeHtml(item.name)}</div>
                             ${isBotDump ? '<div class="bot-dump-alert">⚠️ POTENTIAL BOT DUMP</div>' : ''}
                         </div>
                         
@@ -567,7 +575,11 @@
             const significantDrop = priceChangePercent <= -5;
 
             // Check for volume spike (2x or more than average)
-            const avgVolume = history.slice(0, -1).reduce((sum, h) => sum + h.volume, 0) / (history.length - 1);
+            // Calculate average volume from all history except the current one
+            const previousHistory = history.slice(0, -1);
+            if (previousHistory.length === 0) return false;
+            
+            const avgVolume = previousHistory.reduce((sum, h) => sum + h.volume, 0) / previousHistory.length;
             const volumeSpike = currentVolume >= avgVolume * 2;
 
             return significantDrop && volumeSpike && avgVolume > 0;
