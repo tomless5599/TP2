@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSRS Grand Exchange Tracker - Bot Dump Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #e8e8e8;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #b8b8b8;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #0f1624;
+            border-radius: 10px;
+            border-left: 4px solid #4a6fa5;
+        }
+
+        .section h2 {
+            color: #e8e8e8;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background: #1a1a2e;
+            border: 2px solid #4a6fa5;
+            border-radius: 5px;
+            color: #e8e8e8;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #4a6fa5;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5a7fb5;
+        }
+
+        button.danger {
+            background: #c0392b;
+        }
+
+        button.danger:hover {
+            background: #e74c3c;
+        }
+
+        #itemList {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #1a1a2e;
+            border: 2px solid #4a6fa5;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .item-option {
+            padding: 10px;
+            cursor: pointer;
+            color: #e8e8e8;
+            border-bottom: 1px solid #2a2a3e;
+        }
+
+        .item-option:hover {
+            background: #2a2a3e;
+        }
+
+        .watchlist {
+            display: grid;
+            gap: 15px;
+        }
+
+        .watchlist-item {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4a6fa5;
+        }
+
+        .watchlist-item.bot-dump {
+            border-left-color: #e74c3c;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 20px 5px rgba(231, 76, 60, 0.3);
+            }
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-name {
+            color: #e8e8e8;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .bot-dump-alert {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .price-box {
+            background: #0f1624;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #2a2a3e;
+        }
+
+        .price-label {
+            color: #b8b8b8;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .price-value {
+            color: #e8e8e8;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .price-change {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .price-change.positive {
+            color: #27ae60;
+        }
+
+        .price-change.negative {
+            color: #e74c3c;
+        }
+
+        .chart-container {
+            background: #0f1624;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            height: 200px;
+            position: relative;
+        }
+
+        .chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading {
+            color: #b8b8b8;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .info-box {
+            background: #2a2a3e;
+            padding: 15px;
+            border-radius: 5px;
+            color: #b8b8b8;
+            margin-top: 10px;
+        }
+
+        .info-box.warning {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e8e8e8;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: #0f1624;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-label {
+            color: #b8b8b8;
+            font-size: 0.85em;
+        }
+
+        .stat-value {
+            color: #e8e8e8;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+
+        .help-section {
+            background: #2a2a3e;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .help-section h3 {
+            color: #e8e8e8;
+            margin-bottom: 10px;
+        }
+
+        .help-section p, .help-section ul {
+            color: #b8b8b8;
+            line-height: 1.6;
+        }
+
+        .help-section ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .last-updated {
+            color: #b8b8b8;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ OSRS Grand Exchange Tracker</h1>
+        <p class="subtitle">Real-time price tracking and bot dump detection for Old School RuneScape</p>
+
+        <div class="section">
+            <h2>🔍 Search Items</h2>
+            <div class="search-container">
+                <input type="text" id="itemSearch" placeholder="Search for items (e.g., Dragon bones, Rune platebody)...">
+                <button id="searchButton">Search</button>
+            </div>
+            <div id="itemList"></div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Watchlist</h2>
+            <div id="watchlist" class="watchlist">
+                <div class="loading">Add items to your watchlist to start tracking prices and detecting bot dumps</div>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h3>ℹ️ How to Use</h3>
+            <p><strong>What is a bot dump?</strong> Bot dumps occur when automated bots sell large quantities of items quickly, causing sudden price drops. This tool helps you spot these opportunities.</p>
+            <ul>
+                <li><strong>Search for items:</strong> Type an item name and click Search to find items</li>
+                <li><strong>Add to watchlist:</strong> Click on an item from search results to add it to your watchlist</li>
+                <li><strong>Monitor prices:</strong> The tracker will automatically update prices every 30 seconds</li>
+                <li><strong>Bot dump alerts:</strong> Items with sudden price drops (>5%) and high volume will be flagged with a red alert</li>
+                <li><strong>Buy low, sell high:</strong> Bot dumps often recover within hours, making them good flip opportunities</li>
+            </ul>
+            <p style="margin-top: 10px;"><strong>Bot Dump Indicators:</strong></p>
+            <ul>
+                <li>Price drop of 5% or more in 5 minutes</li>
+                <li>Trading volume 2x higher than normal</li>
+                <li>Items with these indicators will pulse red</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let itemMapping = [];
+        let watchlistItems = new Map();
+        let updateInterval = null;
+
+        // Load item mapping on page load
+        async function loadItemMapping() {
+            try {
+                const response = await fetch('https://prices.runescape.wiki/api/v1/osrs/mapping', {
+                    headers: {
+                        'User-Agent': 'OSRS GE Tracker - Bot Dump Detector'
+                    }
+                });
+                itemMapping = await response.json();
+                console.log(`Loaded ${itemMapping.length} items`);
+            } catch (error) {
+                console.error('Error loading item mapping:', error);
+                alert('Failed to load item data. Please check your internet connection.');
+            }
+        }
+
+        // HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Calculate average volume from historical data (excluding current)
+        function calculateAvgVolume(history) {
+            if (history.length < 2) return 0;
+            const previousHistory = history.slice(0, -1);
+            return previousHistory.reduce((sum, h) => sum + h.volume, 0) / previousHistory.length;
+        }
+
+        // Search for items
+        function searchItems() {
+            const searchTerm = document.getElementById('itemSearch').value.toLowerCase();
+            const itemList = document.getElementById('itemList');
+            
+            if (searchTerm.length < 2) {
+                itemList.style.display = 'none';
+                return;
+            }
+
+            const results = itemMapping.filter(item => 
+                item.name.toLowerCase().includes(searchTerm)
+            ).slice(0, 20);
+
+            if (results.length === 0) {
+                itemList.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'item-option';
+                div.textContent = 'No items found';
+                itemList.appendChild(div);
+                itemList.style.display = 'block';
+                return;
+            }
+
+            // Clear and rebuild item list with event listeners
+            itemList.innerHTML = '';
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-option';
+                div.textContent = item.name;
+                div.addEventListener('click', () => addToWatchlist(item.id, item.name));
+                itemList.appendChild(div);
+            });
+            itemList.style.display = 'block';
+        }
+
+        // Add item to watchlist
+        async function addToWatchlist(itemId, itemName) {
+            if (watchlistItems.has(itemId)) {
+                alert('Item already in watchlist');
+                return;
+            }
+
+            watchlistItems.set(itemId, {
+                id: itemId,
+                name: itemName,
+                history: []
+            });
+
+            document.getElementById('itemList').style.display = 'none';
+            document.getElementById('itemSearch').value = '';
+
+            await updateWatchlist();
+            
+            // Start auto-update if not already running
+            if (!updateInterval) {
+                updateInterval = setInterval(updateWatchlist, 30000); // Update every 30 seconds
+            }
+        }
+
+        // Remove item from watchlist
+        function removeFromWatchlist(itemId) {
+            watchlistItems.delete(itemId);
+            if (watchlistItems.size === 0 && updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            updateWatchlist();
+        }
+
+        // Update watchlist with current prices
+        async function updateWatchlist() {
+            const watchlistDiv = document.getElementById('watchlist');
+            
+            if (watchlistItems.size === 0) {
+                watchlistDiv.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'loading';
+                div.textContent = 'Add items to your watchlist to start tracking prices and detecting bot dumps';
+                watchlistDiv.appendChild(div);
+                return;
+            }
+
+            try {
+                // Fetch latest prices
+                const latestResponse = await fetch('https://prices.runescape.wiki/api/v1/osrs/latest', {
+                    headers: {
+                        'User-Agent': 'OSRS GE Tracker - Bot Dump Detector'
+                    }
+                });
+                const latestData = await latestResponse.json();
+
+                // Fetch 5-minute data for volume analysis
+                const fiveMinResponse = await fetch('https://prices.runescape.wiki/api/v1/osrs/5m', {
+                    headers: {
+                        'User-Agent': 'OSRS GE Tracker - Bot Dump Detector'
+                    }
+                });
+                const fiveMinData = await fiveMinResponse.json();
+
+                watchlistDiv.innerHTML = '';
+
+                for (let [itemId, item] of watchlistItems) {
+                    const latest = latestData.data[itemId];
+                    const fiveMin = fiveMinData.data[itemId];
+                    
+                    if (!latest && !fiveMin) {
+                        continue;
+                    }
+
+                    // Calculate prices
+                    const highPrice = latest?.high || fiveMin?.avgHighPrice || 0;
+                    const lowPrice = latest?.low || fiveMin?.avgLowPrice || 0;
+                    const avgPrice = Math.round((highPrice + lowPrice) / 2);
+                    const volume = fiveMin?.highPriceVolume || 0;
+
+                    // Store history for price change calculation
+                    item.history.push({
+                        timestamp: Date.now(),
+                        price: avgPrice,
+                        volume: volume
+                    });
+
+                    // Keep only last 10 data points
+                    if (item.history.length > 10) {
+                        item.history.shift();
+                    }
+
+                    // Calculate price change
+                    let priceChange = 0;
+                    let priceChangePercent = 0;
+                    if (item.history.length >= 2) {
+                        const oldPrice = item.history[item.history.length - 2].price;
+                        priceChange = avgPrice - oldPrice;
+                        priceChangePercent = oldPrice > 0 ? ((priceChange / oldPrice) * 100) : 0;
+                    }
+
+                    // Calculate average volume from historical data (excluding current)
+                    const avgVolume = calculateAvgVolume(item.history) || volume;
+                    const volumeMultiplier = avgVolume > 0 ? (volume / avgVolume).toFixed(2) : 'N/A';
+
+                    // Detect bot dump using consistent volume comparison
+                    const isBotDump = detectBotDump(item.history, priceChangePercent, volume);
+
+                    // Render item card
+                    const itemCard = document.createElement('div');
+                    itemCard.className = `watchlist-item ${isBotDump ? 'bot-dump' : ''}`;
+                    itemCard.innerHTML = `
+                        <div class="item-header">
+                            <div class="item-name">${escapeHtml(item.name)}</div>
+                            ${isBotDump ? '<div class="bot-dump-alert">⚠️ POTENTIAL BOT DUMP</div>' : ''}
+                        </div>
+                        
+                        <div class="price-grid">
+                            <div class="price-box">
+                                <div class="price-label">High Price</div>
+                                <div class="price-value">${formatGP(highPrice)}</div>
+                            </div>
+                            <div class="price-box">
+                                <div class="price-label">Low Price</div>
+                                <div class="price-value">${formatGP(lowPrice)}</div>
+                            </div>
+                            <div class="price-box">
+                                <div class="price-label">Average Price</div>
+                                <div class="price-value">${formatGP(avgPrice)}</div>
+                                ${priceChange !== 0 ? `<div class="price-change ${priceChange > 0 ? 'positive' : 'negative'}">
+                                    ${priceChange > 0 ? '▲' : '▼'} ${formatGP(Math.abs(priceChange))} (${priceChangePercent.toFixed(2)}%)
+                                </div>` : ''}
+                            </div>
+                            <div class="price-box">
+                                <div class="price-label">Volume (5m)</div>
+                                <div class="price-value">${volume.toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Volume Multiplier</div>
+                                <div class="stat-value" style="color: ${volumeMultiplier > 2 ? '#e74c3c' : '#e8e8e8'}">${volumeMultiplier}x</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Data Points</div>
+                                <div class="stat-value">${item.history.length}</div>
+                            </div>
+                        </div>
+
+                        ${isBotDump ? `
+                            <div class="info-box warning">
+                                <strong>⚠️ Bot Dump Detected!</strong><br>
+                                This item shows signs of a bot dump: price dropped ${Math.abs(priceChangePercent).toFixed(2)}% with ${volumeMultiplier}x normal volume.
+                                Consider buying now and selling later when the price recovers.
+                            </div>
+                        ` : ''}
+
+                        <div class="action-buttons">
+                            <button class="remove-btn" data-item-id="${itemId}">Remove from Watchlist</button>
+                        </div>
+
+                        <div class="last-updated">Last updated: ${new Date().toLocaleTimeString()}</div>
+                    `;
+                    
+                    // Add event listener for remove button
+                    const removeBtn = itemCard.querySelector('.remove-btn');
+                    removeBtn.addEventListener('click', () => removeFromWatchlist(itemId));
+                    
+                    watchlistDiv.appendChild(itemCard);
+                }
+            } catch (error) {
+                console.error('Error updating watchlist:', error);
+                watchlistDiv.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'loading';
+                div.textContent = 'Error loading price data. Will retry in 30 seconds...';
+                watchlistDiv.appendChild(div);
+            }
+        }
+
+        // Detect bot dump based on price drop and volume spike
+        function detectBotDump(history, priceChangePercent, currentVolume) {
+            if (history.length < 2) return false;
+
+            // Check for significant price drop (5% or more)
+            const significantDrop = priceChangePercent <= -5;
+
+            // Check for volume spike (2x or more than average)
+            const avgVolume = calculateAvgVolume(history);
+            if (avgVolume === 0) return false;
+            
+            const volumeSpike = currentVolume >= avgVolume * 2;
+
+            return significantDrop && volumeSpike;
+        }
+
+        // Format GP (gold pieces)
+        function formatGP(amount) {
+            if (amount >= 1000000) {
+                return (amount / 1000000).toFixed(2) + 'M';
+            } else if (amount >= 1000) {
+                return (amount / 1000).toFixed(1) + 'K';
+            }
+            return amount.toLocaleString();
+        }
+
+        // Add event listener for search button
+        document.getElementById('searchButton').addEventListener('click', searchItems);
+
+        // Allow searching with Enter key and auto-search as typing
+        document.getElementById('itemSearch').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchItems();
+            } else if (this.value.length >= 2) {
+                searchItems();
+            } else {
+                document.getElementById('itemList').style.display = 'none';
+            }
+        });
+
+        // Initialize
+        loadItemMapping();
+    </script>
+</body>
+</html>
