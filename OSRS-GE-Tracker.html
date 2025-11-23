@@ -389,7 +389,11 @@
             ).slice(0, 20);
 
             if (results.length === 0) {
-                itemList.innerHTML = '<div class="item-option">No items found</div>';
+                itemList.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'item-option';
+                div.textContent = 'No items found';
+                itemList.appendChild(div);
                 itemList.style.display = 'block';
                 return;
             }
@@ -445,7 +449,11 @@
             const watchlistDiv = document.getElementById('watchlist');
             
             if (watchlistItems.size === 0) {
-                watchlistDiv.innerHTML = '<div class="loading">Add items to your watchlist to start tracking prices and detecting bot dumps</div>';
+                watchlistDiv.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'loading';
+                div.textContent = 'Add items to your watchlist to start tracking prices and detecting bot dumps';
+                watchlistDiv.appendChild(div);
                 return;
             }
 
@@ -575,7 +583,11 @@
                 }
             } catch (error) {
                 console.error('Error updating watchlist:', error);
-                watchlistDiv.innerHTML = '<div class="loading">Error loading price data. Will retry in 30 seconds...</div>';
+                watchlistDiv.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'loading';
+                div.textContent = 'Error loading price data. Will retry in 30 seconds...';
+                watchlistDiv.appendChild(div);
             }
         }
 
